@@ -412,7 +412,24 @@ function saveToLocalStorage() {
     window.localStorage.setItem("defaults", JSON.stringify(data));
 }
 
-function parseClipboard(clip) {
+function manualClipboard(callback) {
+    let modal = $('#clipboard-modal');
+
+    modal.find('#modal-text').val('');
+    modal.find('#modal-load').off('click').click(function(){
+        callback(modal.find('#modal-text').val());
+        modal.modal('hide');
+    });
+
+    modal.modal();
+}
+
+function parseEconomyClipboard(clip) {
+    if (clip.match(/Detailní rozpis staveb najdete v menu/) === null) {
+        alert('Ve schránce není ctrl+a, ctrl+c z Hospodaření');
+        return;
+    }
+
     let armyTurnSummary = clip.match(/^CELKEM ZA TAH\t([-\d]*\t[-\d]*\t[-\d]*\t[-\d]*\t[-\d]*)$/m)[1].split("\t");
     let provinceTurnSummary = clip.match(/^CELKEM ZA TAH\t([-\d]*\t[-\d]*\t[-\d]*)$/m)[1].split("\t");
     let manaMatch = clip.match(/^Mana: ([- \d]+) \(([-\d]+)%\)/m);
@@ -444,7 +461,19 @@ function parseClipboard(clip) {
     console.log("Loaded from clipboard:", parsed);
     $('#ok-alert').show().delay(2000).fadeOut({duration: 500});
 
-    return parsed;
+    $('.input-gp').val(parsed.gold);
+    $('.input-gp-tu').val(parsed.goldPerTu);
+    $('.input-mn').val(parsed.mana);
+    $('.input-mn-tu').val(parsed.manaPerTu);
+    $('.input-mn-max').val(parsed.manaMax);
+    $('.input-pp').val(parsed.pop);
+    $('.input-pp-tu').val(parsed.popPerTu);
+    $('.input-pp-max').val(parsed.popMax);
+    $('.input-units-count').val(parsed.unitsCount);
+    $('.input-taxes').val(parsed.taxes);
+    $('.input-power').val(parsed.power);
+
+    anyInputChanged();
 }
 
 /** @type Promise */
@@ -472,6 +501,10 @@ function anyInputChanged() {
 
     saveToLocalStorage();
     fullSimulation();
+}
+
+function clipboardFallback() {
+    
 }
 
 $(function () {
@@ -511,32 +544,16 @@ $(function () {
     });
 
     $('#load-from-ma').click(function() {
+        if (typeof navigator.clipboard.readText === 'undefined') {
+            console.error('Clipboard.readText not available');
+            manualClipboard(parseEconomyClipboard);
+            return;
+        }
         navigator.clipboard.readText()
-            .then(clip => {
-                if (clip.match(/Detailní rozpis staveb najdete v menu/) === null) {
-                    alert('Ve schránce není ctrl+a, ctrl+c z Hospodaření');
-                    return;
-                }
-
-                let parsed = parseClipboard(clip);
-
-                $('.input-gp').val(parsed.gold);
-                $('.input-gp-tu').val(parsed.goldPerTu);
-                $('.input-mn').val(parsed.mana);
-                $('.input-mn-tu').val(parsed.manaPerTu);
-                $('.input-mn-max').val(parsed.manaMax);
-                $('.input-pp').val(parsed.pop);
-                $('.input-pp-tu').val(parsed.popPerTu);
-                $('.input-pp-max').val(parsed.popMax);
-                $('.input-units-count').val(parsed.unitsCount);
-                $('.input-taxes').val(parsed.taxes);
-                $('.input-power').val(parsed.power);
-
-                anyInputChanged();
-            })
+            .then(parseEconomyClipboard)
             .catch(err => {
-                alert('Musíš povolit přístup ke schránce!');
                 console.error('Failed to read clipboard contents: ', err);
+                manualClipboard(parseEconomyClipboard);
             });
     });
 
