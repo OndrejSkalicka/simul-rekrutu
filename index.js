@@ -191,6 +191,42 @@ function fullSimulation() {
     })
 }
 
+function addEmptyUnitRow() {
+    return $('#template-unit > li').clone(true, true).appendTo($('#units-input'));
+}
+
+function addRemoveUnitsRows() {
+    // basically the goal is to keep 'exactly one' blank row
+    let last = null;
+    let reversedLis = $('#units-input li').get().reverse();
+
+    if (reversedLis.length === 0) {
+        // no rows
+        addEmptyUnitRow();
+        return;
+    }
+
+    if (parseInt($(reversedLis[0]).find('.input-unit option:selected').val()) !== 0) {
+        // last row ain't an empty
+        addEmptyUnitRow();
+        return;
+    }
+
+    reversedLis.some(function (li) {
+        console.log(li);
+        let unitId = parseInt($(li).find('.input-unit option:selected').val());
+
+        if (unitId > 0) return true;
+
+        if (last !== null) {
+            last.remove();
+        }
+        last = $(li);
+
+        return false;
+    });
+}
+
 $(function () {
     // build template
     professions.forEach(function (profession) {
@@ -216,17 +252,17 @@ $(function () {
         if (building !== null) {
             row.find('.input-units-per-tu').val(r2(building.maxCount * unit.recruitSingleBuilding)).change();
         }
+
+        addRemoveUnitsRows();
     });
 
     $('.input-tu').change(changeInput);
     $('.input-units-per-tu').change(changeInput);
 
-    // cy-clone
+    // cy-clone TODO remove + load from localStorage
 
     let first = $('#template-unit > li').clone(true, true);
     first.appendTo($('#units-input'));
-    $('#template-unit > li').clone(true, true).appendTo($('#units-input'));
-    $('#template-unit > li').clone(true, true).appendTo($('#units-input'));
 
     // provi initial, TODO load from localstorage
     $('.input-gp').val(302037);
@@ -243,12 +279,13 @@ $(function () {
 
     first.find('.input-unit').val(1002).change();
 
-    $("#units-input").sortable().disableSelection();
+    $("#units-input")
+        .sortable({
+            'update': addRemoveUnitsRows
+        })
+        .disableSelection();
 
-    // TODO REMOVE
-    // $('.selectpicker').selectpicker('val', '1002');
-
-    // $('#submit').click(fullSimulation);
+    addRemoveUnitsRows();
 
 
     /*    console.log(navigator.clipboard.readText()
