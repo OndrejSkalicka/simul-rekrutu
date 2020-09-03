@@ -430,22 +430,22 @@ function parseEconomyClipboard(clip) {
         return;
     }
 
-    let armyTurnSummary = clip.match(/^CELKEM ZA TAH\t([-\d]*\t[-\d]*\t[-\d]*\t[-\d]*\t[-\d]*)$/m)[1].split("\t");
-    let provinceTurnSummary = clip.match(/^CELKEM ZA TAH\t([-\d]*\t[-\d]*\t[-\d]*)$/m)[1].split("\t");
-    let manaMatch = clip.match(/^Mana: ([- \d]+) \(([-\d]+)%\)/m);
+    let armyTurnSummary = clip.match(/^CELKEM ZA TAH ?\t([-\d]* ?\t[-\d]* ?\t[-\d]* ?\t[-\d]* ?\t[-\d]*)/im)[1].split('\t');
+    let provinceTurnSummary = clip.match(/^CELKEM ZA TAH\t([-\d]* ?\t[-\d]* ?\t[-\d]*)$/im)[1].split("\t");
+    let manaMatch = clip.match(/^ *Mana: ([- \d]+) \(([-\d]+)%\)/m);
     let mana = i(manaMatch[1]);
     let manaMax = 0;
     let manaPercent = i(manaMatch[2]);
     if (manaPercent > 0) {
         manaMax = r(mana * 100 / manaPercent);
     }
-    let pop = i(clip.match(/^Populace:([\d]+)/m)[1]);
+    let pop = i(clip.match(/^ *Populace:([\d]+)/m)[1]);
     let goldFromPop = i(clip.match(/^Poddaní\t([\d]+)/m)[1]);
 
     let taxes = max(1, min(70, r(goldFromPop / pop / 0.000078)));
 
     let parsed = {
-        gold: i(clip.match(/^Zlato:([\d]+)/m)[1]),
+        gold: i(clip.match(/^ *Zlato:([\d]+)/m)[1]),
         unitsCount: i(armyTurnSummary[1]),
         goldPerTu: i(provinceTurnSummary[0]),
         manaPerTu: i(provinceTurnSummary[1]),
@@ -453,9 +453,9 @@ function parseEconomyClipboard(clip) {
         mana: i(manaMatch[1]),
         manaMax: manaMax,
         pop: pop,
-        popMax: i(clip.match(/^CELKEM.*?\t([ \d]+)$/m)[1]),
+        popMax: i(clip.match(/^CELKEM\s*?[ \d]+ ?\t([ \d]+)$/mi)[1]),
         taxes: taxes,
-        power: i(clip.match(/^Síla provincie:(\d+)/m)[1]),
+        power: i(clip.match(/^ *Síla provincie:(\d+)/m)[1]),
     }
 
     console.log("Loaded from clipboard:", parsed);
