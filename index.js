@@ -363,7 +363,6 @@ function addRemoveUnitsRows() {
     }
 
     reversedLis.some(function (li) {
-        console.log(li);
         let unitId = parseInt($(li).find('.input-unit option:selected').val());
 
         if (unitId > 0) return true;
@@ -471,7 +470,6 @@ function anyInputChanged() {
     });
 
 
-    console.log('anyInputChanged');
     saveToLocalStorage();
     fullSimulation();
 }
