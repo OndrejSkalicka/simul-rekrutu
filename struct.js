@@ -77,7 +77,8 @@ class Province {
     constructor(gold, goldPerTuStatic,
                 mana, manaMax, manaPerTu,
                 pop, popMax, popPerTuStatic,
-                power, taxes, unitsCount) {
+                power, taxes, unitsCount,
+                spellPower, maxSpellEffect) {
         this.gold = gold;
         this.goldPerTuStatic = goldPerTuStatic;
         this.mana = mana;
@@ -89,6 +90,8 @@ class Province {
         this.power = power;
         this.taxes = taxes;
         this.unitsCount = unitsCount;
+        this.spellPower = spellPower;
+        this.maxSpellEffect = maxSpellEffect;
     }
 
     goldPerTuPop() {
@@ -106,6 +109,10 @@ class Province {
     totalPopPerTu() {
         return this.popPerTuStatic + this.popPerTuPop();
     }
+
+    clone() {
+        return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+    }
 }
 
 class Turn {
@@ -119,10 +126,13 @@ class Turn {
      * @param {Unit} recruitedUnit
      * @param recruitedCount
      * @param recruitedTotal
+     * @param {Spell|null} spell
+     * @param {string|null} spellText
      */
     constructor(number, province,
                 goldGained, manaGained, popGained,
-                recruitedUnit, recruitedCount, recruitedTotal) {
+                recruitedUnit, recruitedCount, recruitedTotal,
+                spell, spellText) {
         this.number = number;
         this.province = province;
         this.goldGained = goldGained;
@@ -131,6 +141,37 @@ class Turn {
         this.recruitedUnit = recruitedUnit;
         this.recruitedCount = recruitedCount;
         this.recruitedTotal = recruitedTotal;
+        this.spell = spell;
+        this.spellText = spellText;
+    }
+}
+
+class Spell {
+    /**
+     *
+     * @param {string} name
+     * @param {float} xp
+     * @param {int} turn
+     */
+    constructor(name, xp, turn) {
+        this.name = name;
+        this.xp = xp;
+        this.turn = turn;
     }
 
+    /**
+     * @param {Province} province
+     * @returns {Province}
+     */
+    cast(province) {
+        switch(this.name) {
+            case 'Klid a mír':
+                let extraPop = r(600000 * province.spellPower / 32 * min(this.xp, province.maxSpellEffect));
+                province.pop += extraPop;
+                return 'Kouzlo magicky přidalo ' + nf0(extraPop) + ' lidí.';
+
+            default:
+                return null;
+        }
+    }
 }

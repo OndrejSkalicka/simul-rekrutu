@@ -62,44 +62,52 @@
                     <div class="form-row">
                         <div class="form-group col-3">
                             <label>Mana</label>
-                            <input type="number" class="form-control input-mn">
+                            <input type="number" class="form-control input-mn" value="0">
                         </div>
                         <div class="form-group col-3">
                             <label>Mana/TU</label>
-                            <input type="number" class="form-control input-mn-tu">
+                            <input type="number" class="form-control input-mn-tu" value="0">
                         </div>
                         <div class="form-group col-3">
                             <label>Mana Max</label>
-                            <input type="number" class="form-control input-mn-max">
+                            <input type="number" class="form-control input-mn-max" value="0">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>SK</label>
+                            <input type="number" class="form-control input-spell-power" value="0">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-3">
                             <label>Populace</label>
-                            <input type="number" class="form-control input-pp">
+                            <input type="number" class="form-control input-pp" value="0">
                         </div>
 
                         <div class="form-group col-3">
                             <label>Populace/TU</label>
-                            <input type="number" class="form-control input-pp-tu">
+                            <input type="number" class="form-control input-pp-tu" value="0">
                         </div>
                         <div class="form-group col-3">
                             <label>Populace max</label>
-                            <input type="number" class="form-control input-pp-max">
+                            <input type="number" class="form-control input-pp-max" value="0">
                         </div>
                         <div class="form-group col-3">
                             <label>Počet jednotek</label>
-                            <input type="number" class="form-control input-units-count">
+                            <input type="number" class="form-control input-units-count" value="0">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-3">
                             <label>Daně</label>
-                            <input type="number" class="form-control input-taxes" min="1" max="70">
+                            <input type="number" class="form-control input-taxes" min="1" max="70" value="70">
                         </div>
                         <div class="form-group col-3">
                             <label>Síla</label>
-                            <input type="number" class="form-control input-power">
+                            <input type="number" class="form-control input-power" value="0">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Max efekt kouzel (%)</label>
+                            <input type="number" class="form-control input-max-spell-effect" value="90.0">
                         </div>
                         <div class="form-group col-3">
                             <label title="Ovlivňuje předvyplněné 'Jednotek/TU' pro nové rekrutové řádky. 1.5 = 50% bonus na rekrut jednotek.">
@@ -172,6 +180,10 @@
                     mana <span class="province-mn"></span>,
                     pp <span class="province-pp"></span>,
                     síla <span class="province-power"></span>.
+                </div>
+                <div class="text-warning d-none spell-block">
+                    Sesílání <span class="spell-name"></span> bylo dokončeno.<br/>
+                    <span class="spell-text"></span>
                 </div>
             </small>
         </div>
