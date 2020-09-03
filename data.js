@@ -136,3 +136,11 @@ let professions = [
         new Unit(5518, "Sfinga", 14.2, 45, 2, 128, 220, 25, 197.5, 0.31, null)
     ])
 ];
+
+let units = {};
+
+professions.forEach(function(profession) {
+    profession.units.forEach(function(unit) {
+        units[unit.id] = unit;
+    });
+});

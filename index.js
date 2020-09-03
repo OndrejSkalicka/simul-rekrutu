@@ -144,16 +144,27 @@ function fullSimulation() {
         parseInt($('.input-units-count').val()),
     );
 
+    let reqs = [];
 
-    let sims = simulate([
-        new RecruitRequest(professions[0].units[1],
-            parseInt($('.input-tu').val()),
-            parseFloat($('.input-units-per-tu').val()))
-    ], initialProvince);
+    $('#units-input .input-row').each(function () {
+        let unit = $(this).find('.input-unit option:selected').data('unit');
 
+        console.log('ii unit', unit);
+        if (typeof unit === 'undefined') {
+            return;
+        }
+
+        reqs.push(new RecruitRequest(unit,
+            parseInt($(this).find('.input-tu').val()),
+            parseFloat($(this).find('.input-units-per-tu').val())
+        ));
+    });
+
+
+    let sims = simulate(reqs, initialProvince);
 
     sims.forEach(function (turn) {
-        let turnDiv = $('.template-turn > div').clone();
+        let turnDiv = $('#template-turn > div').clone();
 
         turnDiv.find('.turn-number').text(nf0(turn.number + 1));
 
@@ -195,6 +206,7 @@ $(function () {
         optgroup.appendTo('.input-unit');
     });
 
+    // bind events
     $('.input-unit').change(function () {
         let row = $(this).parents('.input-row');
         /** @type Unit */
@@ -209,7 +221,14 @@ $(function () {
     $('.input-tu').change(changeInput);
     $('.input-units-per-tu').change(changeInput);
 
+    // cy-clone
 
+    let first = $('#template-unit > li').clone(true, true);
+    first.appendTo($('#units-input'));
+    $('#template-unit > li').clone(true, true).appendTo($('#units-input'));
+    $('#template-unit > li').clone(true, true).appendTo($('#units-input'));
+
+    // provi initial, TODO load from localstorage
     $('.input-gp').val(302037);
     $('.input-mn').val(95000);
     $('.input-pp').val(197684);
@@ -222,9 +241,9 @@ $(function () {
     $('.input-units-count').val(25971);
     $('.input-power').val(59659);
 
-    $('.input-unit').val(1002).change();
+    first.find('.input-unit').val(1002).change();
 
-    $( "#units-input" ).sortable().disableSelection();
+    $("#units-input").sortable().disableSelection();
 
     // TODO REMOVE
     // $('.selectpicker').selectpicker('val', '1002');
