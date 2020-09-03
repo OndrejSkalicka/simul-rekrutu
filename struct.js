@@ -74,18 +74,37 @@ class RecruitRequest {
 }
 
 class Province {
-    constructor(gold, goldPerTu, mana, manaMax, manaPerTu, pop, popMax, popPerTu, power, taxes, unitsCount) {
+    constructor(gold, goldPerTuStatic,
+                mana, manaMax, manaPerTu,
+                pop, popMax, popPerTuStatic,
+                power, taxes, unitsCount) {
         this.gold = gold;
-        this.goldPerTu = goldPerTu;
+        this.goldPerTuStatic = goldPerTuStatic;
         this.mana = mana;
         this.manaMax = manaMax;
         this.manaPerTu = manaPerTu;
         this.pop = pop;
         this.popMax = popMax;
-        this.popPerTu = popPerTu;
+        this.popPerTuStatic = popPerTuStatic;
         this.power = power;
         this.taxes = taxes;
         this.unitsCount = unitsCount;
+    }
+
+    goldPerTuPop() {
+        return 0.000078 * this.pop * this.taxes;
+    }
+
+    totalGoldPerTu() {
+        return this.goldPerTuStatic + this.goldPerTuPop();
+    }
+
+    popPerTuPop() {
+        return this.pop * (0.0065 - 0.00005 * this.taxes);
+    }
+
+    totalPopPerTu() {
+        return this.popPerTuStatic + this.popPerTuPop();
     }
 }
 
@@ -94,13 +113,21 @@ class Turn {
      *
      * @param {int} number
      * @param {Province} province
-     * @param recruitedUnit
+     * @param goldGained
+     * @param manaGained
+     * @param popGained
+     * @param {Unit} recruitedUnit
      * @param recruitedCount
      * @param recruitedTotal
      */
-    constructor(number, province, recruitedUnit, recruitedCount, recruitedTotal) {
+    constructor(number, province,
+                goldGained, manaGained, popGained,
+                recruitedUnit, recruitedCount, recruitedTotal) {
         this.number = number;
         this.province = province;
+        this.goldGained = goldGained;
+        this.manaGained = manaGained;
+        this.popGained = popGained;
         this.recruitedUnit = recruitedUnit;
         this.recruitedCount = recruitedCount;
         this.recruitedTotal = recruitedTotal;
