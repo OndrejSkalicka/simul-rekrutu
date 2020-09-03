@@ -161,9 +161,12 @@ function fullSimulation() {
     });
 
 
-    let sims = simulate(reqs, initialProvince);
+    let simulatedTurns = simulate(reqs, initialProvince);
+    let goldRows = [];
+    let manaRows = [];
+    let popRows = [];
 
-    sims.forEach(function (turn) {
+    simulatedTurns.forEach(function (turn) {
         let turnDiv = $('#template-turn > div').clone();
 
         turnDiv.find('.turn-number').text(nf0(turn.number + 1));
@@ -185,10 +188,132 @@ function fullSimulation() {
         prettyNumberOutput(turnDiv.find('.province-pp'), turn.province.pop, false);
 
         turnDiv.prependTo(turnsDiv);
-        console.log("Turn " + (turn.number + 1));
-        console.log("zl", turn.goldGained, "mn", turn.manaGained, "pp", turn.popGained);
-        console.log(turn.province);
-    })
+
+        goldRows.push([
+            'TU ' + (turn.number + 1),
+            turn.province.gold,
+            r(turn.province.totalGoldPerTu()),
+        ]);
+
+        manaRows.push([
+            'TU ' + (turn.number + 1),
+            turn.province.mana,
+            r(turn.province.manaPerTu),
+        ]);
+
+        popRows.push([
+            'TU ' + (turn.number + 1),
+            turn.province.pop,
+            r(turn.province.totalPopPerTu()),
+        ]);
+    });
+
+
+    chartPromise.then(function () {
+        let goldData = new google.visualization.DataTable();
+        goldData.addColumn('string', 'Tah');
+        goldData.addColumn('number', 'Zlato');
+        goldData.addColumn('number', 'Zlato/TU');
+        goldData.addRows(goldRows);
+        let manaData = new google.visualization.DataTable();
+        manaData.addColumn('string', 'Tah');
+        manaData.addColumn('number', 'Mana');
+        manaData.addColumn('number', 'Mana/TU');
+        manaData.addRows(manaRows);
+        let popData = new google.visualization.DataTable();
+        popData.addColumn('string', 'Tah');
+        popData.addColumn('number', 'Populace');
+        popData.addColumn('number', 'Populace/TU');
+        popData.addRows(popRows);
+
+        var goldOptions = {
+            title: 'Vývoj zlata podle tahů',
+            height: 500,
+            series: {
+                0: {
+                    targetAxisIndex: 0,
+                    color: '#ffcc00',
+                    lineWidth: 4,
+                },
+                1: {
+                    targetAxisIndex: 1,
+                    color: '#9b9a08',
+                }
+            },
+            vAxes: {
+                0: {
+                    minValue: 0,
+                    title: 'Zlato',
+                    baselineColor: 'red',
+                },
+                1: {
+                    minValue: 0,
+                    title: 'Zlato/TU',
+                    baselineColor: 'red',
+                }
+            }
+        };
+
+        var manaOptions = {
+            title: 'Vývoj many podle tahů',
+            height: 500,
+            series: {
+                0: {
+                    targetAxisIndex: 0,
+                    color: '#0054ff',
+                    lineWidth: 4,
+                },
+                1: {
+                    targetAxisIndex: 1,
+                    color: '#00359d',
+                }
+            },
+            vAxes: {
+                0: {
+                    minValue: 0,
+                    title: 'Mana',
+                    baselineColor: 'red',
+                },
+                1: {
+                    minValue: 0,
+                    title: 'Mana/TU',
+                    baselineColor: 'red',
+                }
+            }
+        };
+
+        var popOptions = {
+            title: 'Vývoj populace podle tahů',
+            height: 500,
+            series: {
+                0: {
+                    targetAxisIndex: 0,
+                    color: '#ff006f',
+                    lineWidth: 4,
+                },
+                1: {
+                    targetAxisIndex: 1,
+                    color: '#810036',
+                }
+            },
+            vAxes: {
+                0: {
+                    minValue: 0,
+                    title: 'Populace',
+                    baselineColor: 'red',
+                },
+                1: {
+                    minValue: 0,
+                    title: 'Populace/TU',
+                    baselineColor: 'red',
+                }
+            }
+        };
+
+        new google.visualization.LineChart(document.getElementById('chart-gold')).draw(goldData, goldOptions);
+        new google.visualization.LineChart(document.getElementById('chart-mana')).draw(manaData, manaOptions);
+        new google.visualization.LineChart(document.getElementById('chart-pop')).draw(popData, popOptions);
+    });
 }
 
 function addEmptyUnitRow() {
@@ -226,6 +351,9 @@ function addRemoveUnitsRows() {
         return false;
     });
 }
+
+/** @type Promise */
+let chartPromise = google.charts.load('current', {'packages': ['line', 'corechart']});
 
 $(function () {
     // build template
@@ -286,6 +414,16 @@ $(function () {
         .disableSelection();
 
     addRemoveUnitsRows();
+
+    // Load the Visualization API and the corechart package.
+
+
+    // Set a callback to run when the Google Visualization API is loaded.
+    // google.charts.setOnLoadCallback(drawChart);
+
+    // Callback that creates and populates a data table,
+    // instantiates the pie chart, passes in the data and
+    // draws it.
 
 
     /*    console.log(navigator.clipboard.readText()
