@@ -14,79 +14,97 @@
 <body class="m-2">
 <h1>Savannah's Toolshopless Simul Rekrutu</h1>
 
-<h2>Provincie</h2>
-<div class="form-group">
-    <div class="form-row input-row">
-
-        <div class="form-group col-1">
-            <label>gp</label>
-            <input type="number" class="form-control input-gp">
-        </div>
-
-        <div class="form-group col-1">
-            <label>mn</label>
-            <input type="number" class="form-control input-mn">
-        </div>
-
-        <div class="form-group col-1">
-            <label>pp</label>
-            <input type="number" class="form-control input-pp">
-        </div>
-
-        <div class="form-group col-1">
-            <label>gp-tu</label>
-            <input type="number" class="form-control input-gp-tu">
-        </div>
-        <div class="form-group col-1">
-            <label>mn-tu</label>
-            <input type="number" class="form-control input-mn-tu">
-        </div>
-        <div class="form-group col-1">
-            <label>mn-max</label>
-            <input type="number" class="form-control input-mn-max">
-        </div>
-        <div class="form-group col-1">
-            <label>pp-tu</label>
-            <input type="number" class="form-control input-pp-tu">
-        </div>
-        <div class="form-group col-1">
-            <label>pp-max</label>
-            <input type="number" class="form-control input-pp-max">
-        </div>
-        <div class="form-group col-1">
-            <label>Taxes</label>
-            <input type="number" class="form-control input-taxes">
-        </div>
-        <div class="form-group col-1">
-            <label>units count</label>
-            <input type="number" class="form-control input-units-count">
-        </div>
-        <div class="form-group col-1">
-            <label>power</label>
-            <input type="number" class="form-control input-power">
-        </div>
-    </div>
-</div>
-
-<h2>Simulované jednotky</h2>
-<ol id="units-input">
-</ol>
-
-<h2>Simulace</h2>
-
 <div class="container-fluid">
     <div class="row">
         <div class="col">
+            <h2>Provincie</h2>
+            <div class="form-group">
+                <div class="input-row">
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Zlato</label>
+                            <input type="number" class="form-control input-gp">
+                        </div>
+                        <div class="form-group col-3">
+                            <label title="Celkem, vč. populace, jednotek.">Zlato/TU</label>
+                            <input type="number" class="form-control input-gp-tu">
+                        </div>
+                    </div>
+
+
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Mana</label>
+                            <input type="number" class="form-control input-mn">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Mana/TU</label>
+                            <input type="number" class="form-control input-mn-tu">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Mana Max</label>
+                            <input type="number" class="form-control input-mn-max">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Populace</label>
+                            <input type="number" class="form-control input-pp">
+                        </div>
+
+                        <div class="form-group col-3">
+                            <label>Populace/TU</label>
+                            <input type="number" class="form-control input-pp-tu">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Populace max</label>
+                            <input type="number" class="form-control input-pp-max">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Počet jednotek</label>
+                            <input type="number" class="form-control input-units-count">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Daně</label>
+                            <input type="number" class="form-control input-taxes" min="1" max="70">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Síla</label>
+                            <input type="number" class="form-control input-power">
+                        </div>
+                        <div class="form-group col-3">
+                            <label title="Ovlivňuje předvyplněné 'Jednotek/TU' pro nové rekrutové řádky">Koeficient
+                                rekrutu</label>
+                            <input type="number" class="form-control input-recruit-coefficient" value="1.0" step="0.1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <h2>Simulované jednotky</h2>
+            <ol id="units-input">
+            </ol>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <h2>Simulace Tahy</h2>
             <div id="turns">
 
             </div>
         </div>
         <div class="col">
-            <div id="charts">
-                <div id="chart-gold"></div>
-                <div id="chart-mana"></div>
-                <div id="chart-pop"></div>
-            </div>
+            <div id="chart-gold"></div>
+        </div>
+        <div class="col">
+            <div id="chart-mana"></div>
+        </div>
+        <div class="col">
+            <div id="chart-pop"></div>
         </div>
     </div>
 </div>
@@ -95,11 +113,15 @@
     <div id="template-turn">
         <div class="mb-2">
             <small>
-            <div>Tah č. <span class="turn-number"></span></div>
-            <div>zl: <span class="gp-gained"></span>, mn: <span class="mn-gained"></span>, pp: <span class="pp-gained"></span></div>
-            <div>Do armády jste narekrutoval <span class="recruited-count"></span> x <span class="recruited-unit-name"></span>, celkem <span class="recruited-total"></span> </div>
-            <div>Cena za jednotky: <span class="recruited-cost-gp"></span>, <span class="recruited-cost-mn"></span>, <span class="recruited-cost-pp"></span> </div>
-            <div>Zlato: <span class="province-gp"></span>, mana <span class="province-mn"></span>, <span class="province-pp"></span> </div>
+                <div>Tah č. <span class="turn-number"></span></div>
+                <div>zl: <span class="gp-gained"></span>, mn: <span class="mn-gained"></span>, pp: <span
+                        class="pp-gained"></span></div>
+                <div>Do armády jste narekrutoval <span class="recruited-count"></span> x <span
+                        class="recruited-unit-name"></span>, celkem <span class="recruited-total"></span></div>
+                <div>Cena za jednotky: <span class="recruited-cost-gp"></span>, <span class="recruited-cost-mn"></span>,
+                    <span class="recruited-cost-pp"></span></div>
+                <div>Zlato: <span class="province-gp"></span>, mana <span class="province-mn"></span>, <span
+                        class="province-pp"></span></div>
             </small>
         </div>
     </div>
@@ -107,25 +129,25 @@
     <ul id="template-unit">
         <li>
             <div class="form-row input-row">
-                <div class="form-group col-2">
+                <div class="form-group col">
                     <label>Jednotka</label>
                     <select class="form-control input-unit">
                         <option value="0">---</option>
                     </select>
                 </div>
-                <div class="form-group col-2">
+                <div class="form-group col">
                     <label>Počet TU</label>
                     <input type="number" class="form-control input-tu" placeholder="0" value="10">
                 </div>
-                <div class="form-group col-2">
+                <div class="form-group col">
                     <label>Jednotek/TU</label>
                     <input type="number" class="form-control input-units-per-tu" placeholder="0.0">
                 </div>
-                <div class="form-group col-2">
+                <div class="form-group col">
                     <label>PWR/TU</label>
                     <input type="text" class="form-control input-power-per-tu" readonly>
                 </div>
-                <div class="form-group col-2">
+                <div class="form-group col">
                     <label>PWR total</label>
                     <input type="text" class="form-control input-power-total" readonly>
                 </div>
@@ -140,7 +162,8 @@
 <script type="text/javascript" src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script type="text/javascript" src="//cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 <script type="text/javascript" src="//stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="//cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+<script type="text/javascript"
+        src="//cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
 <script type="text/javascript" src="//www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript" src="struct.js"></script>
 <script type="text/javascript" src="data.js"></script>

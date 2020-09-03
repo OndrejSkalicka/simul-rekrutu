@@ -26,7 +26,7 @@ function min(a, b) {
     return Math.min(a, b);
 }
 
-function changeInput() {
+function changeUnitInput() {
     let row = $(this).parents('.input-row');
     /** @type Unit */
     let unit = row.find('.input-unit option:selected').data('unit');
@@ -38,7 +38,7 @@ function changeInput() {
     row.find('.input-power-per-tu').val(nf2(pwrPerTu));
     row.find('.input-power-total').val(nf2(pwrPerTu * turns));
 
-    fullSimulation();
+    anyInputChanged();
 }
 
 
@@ -130,17 +130,20 @@ function fullSimulation() {
     let turnsDiv = $('#turns');
     turnsDiv.empty();
 
+    let pop = parseInt($('.input-pp').val());
+    let taxes = parseInt($('.input-taxes').val());
+
     let initialProvince = new Province(
         parseInt($('.input-gp').val()),
-        1090 - 3486,
+        parseInt($('.input-gp-tu').val()) - (0.000078 * pop * taxes),
         parseInt($('.input-mn').val()),
         parseInt($('.input-mn-max').val()),
         parseInt($('.input-mn-tu').val()),
-        parseInt($('.input-pp').val()),
+        pop,
         parseInt($('.input-pp-max').val()),
-        139 - 258/*parseInt($('.input-pp-tu').val())*/,
+        parseInt($('.input-pp-tu').val()) - (pop * (0.0065 - 0.00005 * taxes)),
         parseInt($('.input-power').val()),
-        parseInt($('.input-taxes').val()),
+        taxes,
         parseInt($('.input-units-count').val()),
     );
 
@@ -149,7 +152,6 @@ function fullSimulation() {
     $('#units-input .input-row').each(function () {
         let unit = $(this).find('.input-unit option:selected').data('unit');
 
-        console.log('ii unit', unit);
         if (typeof unit === 'undefined') {
             return;
         }
@@ -352,8 +354,50 @@ function addRemoveUnitsRows() {
     });
 }
 
+function saveToLocalStorage() {
+    let requests = [];
+
+    $('#units-input .input-row').each(function () {
+        /** @type Unit */
+        let unit = $(this).find('.input-unit option:selected').data('unit');
+
+        if (typeof unit === 'undefined') {
+            return;
+        }
+
+        requests.push({
+            unitId: unit.id,
+            turns: parseInt($(this).find('.input-tu').val()),
+            unitsPerTurn: parseFloat($(this).find('.input-units-per-tu').val()),
+        })
+    });
+    let data = {
+        gp: parseInt($('.input-gp').val()),
+        gpTu: parseInt($('.input-gp-tu').val()),
+        mn: parseInt($('.input-mn').val()),
+        mnTu: parseInt($('.input-mn-tu').val()),
+        mnMax: parseInt($('.input-mn-max').val()),
+        pp: parseInt($('.input-pp').val()),
+        ppTu: parseInt($('.input-pp-tu').val()),
+        ppMax: parseInt($('.input-pp-max').val()),
+        unitsCount: parseInt($('.input-units-count').val()),
+        taxes: parseInt($('.input-taxes').val()),
+        power: parseInt($('.input-power').val()),
+        recruitCoefficient: parseFloat($('.input-recruit-coefficient').val()),
+        requests: requests
+    };
+
+    window.localStorage.setItem("defaults", JSON.stringify(data));
+}
+
 /** @type Promise */
 let chartPromise = google.charts.load('current', {'packages': ['line', 'corechart']});
+
+function anyInputChanged() {
+    console.log('anyInputChanged');
+    saveToLocalStorage();
+    fullSimulation();
+}
 
 $(function () {
     // build template
@@ -372,40 +416,53 @@ $(function () {
 
     // bind events
     $('.input-unit').change(function () {
+        addRemoveUnitsRows();
+
         let row = $(this).parents('.input-row');
         /** @type Unit */
         let unit = row.find('.input-unit option:selected').data('unit');
+
+        if (typeof unit === 'undefined') {
+            return;
+        }
+
         let building = unit.recruitBuilding;
 
         if (building !== null) {
-            row.find('.input-units-per-tu').val(r2(building.maxCount * unit.recruitSingleBuilding)).change();
+            row
+                .find('.input-units-per-tu')
+                .val(r2(building.maxCount * unit.recruitSingleBuilding * $('.input-recruit-coefficient').val())).change();
         }
 
-        addRemoveUnitsRows();
+
     });
 
-    $('.input-tu').change(changeInput);
-    $('.input-units-per-tu').change(changeInput);
+    let defaultsJson = window.localStorage.getItem("defaults", null);
 
-    // cy-clone TODO remove + load from localStorage
+    if (defaultsJson !== null) {
+        let defaults = JSON.parse(defaultsJson);
 
-    let first = $('#template-unit > li').clone(true, true);
-    first.appendTo($('#units-input'));
+        $('.input-gp').val(defaults.gp);
+        $('.input-gp-tu').val(defaults.gpTu);
+        $('.input-mn').val(defaults.mn);
+        $('.input-mn-tu').val(defaults.mnTu);
+        $('.input-mn-max').val(defaults.mnMax);
+        $('.input-pp').val(defaults.pp);
+        $('.input-pp-tu').val(defaults.ppTu);
+        $('.input-pp-max').val(defaults.ppMax);
+        $('.input-units-count').val(defaults.unitsCount);
+        $('.input-taxes').val(defaults.taxes);
+        $('.input-power').val(defaults.power);
+        $('.input-recruit-coefficient').val(defaults.recruitCoefficient);
 
-    // provi initial, TODO load from localstorage
-    $('.input-gp').val(302037);
-    $('.input-mn').val(95000);
-    $('.input-pp').val(197684);
-    $('.input-gp-tu').val(-1317);
-    $('.input-mn-tu').val(2319);
-    $('.input-mn-max').val(95000);
-    $('.input-pp-tu').val(474);
-    $('.input-pp-max').val(290000);
-    $('.input-taxes').val(70);
-    $('.input-units-count').val(25971);
-    $('.input-power').val(59659);
 
-    first.find('.input-unit').val(1002).change();
+        defaults.requests.forEach(function(request) {
+            let row = addEmptyUnitRow();
+            row.find('.input-unit').val(request.unitId);
+            row.find('.input-tu').val(request.turns);
+            row.find('.input-units-per-tu').val(request.unitsPerTurn);
+        })
+    }
 
     $("#units-input")
         .sortable({
@@ -413,24 +470,20 @@ $(function () {
         })
         .disableSelection();
 
+    $('.input-tu').change(changeUnitInput);
+    $('.input-units-per-tu').change(changeUnitInput);
+    $('.input-row input').change(anyInputChanged);
+
     addRemoveUnitsRows();
+    fullSimulation();
+    // saveToLocalStorage();
 
-    // Load the Visualization API and the corechart package.
-
-
-    // Set a callback to run when the Google Visualization API is loaded.
-    // google.charts.setOnLoadCallback(drawChart);
-
-    // Callback that creates and populates a data table,
-    // instantiates the pie chart, passes in the data and
-    // draws it.
-
-
-    /*    console.log(navigator.clipboard.readText()
+    // TODO parse clipboard?
+        console.log(navigator.clipboard.readText()
             .then(text => {
                 console.log('Pasted content: ', text);
             })
             .catch(err => {
                 console.error('Failed to read clipboard contents: ', err);
-            }));*/
+            }));
 });
