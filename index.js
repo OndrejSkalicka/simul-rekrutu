@@ -26,6 +26,14 @@ function min(a, b) {
     return Math.min(a, b);
 }
 
+function max(a, b) {
+    return Math.max(a, b);
+}
+
+function i(s) {
+    return parseInt(s.replace(" ", ""));
+}
+
 function changeUnitInput() {
     let row = $(this).parents('.input-row');
     /** @type Unit */
@@ -390,6 +398,40 @@ function saveToLocalStorage() {
     window.localStorage.setItem("defaults", JSON.stringify(data));
 }
 
+function parseClipboard(clip) {
+    let armyTurnSummary = clip.match(/^CELKEM ZA TAH\t([-\d]*\t[-\d]*\t[-\d]*\t[-\d]*\t[-\d]*)$/m)[1].split("\t");
+    let provinceTurnSummary = clip.match(/^CELKEM ZA TAH\t([-\d]*\t[-\d]*\t[-\d]*)$/m)[1].split("\t");
+    let manaMatch = clip.match(/^Mana: ([- \d]+) \(([-\d]+)%\)/m);
+    let mana = i(manaMatch[1]);
+    let manaMax = 0;
+    let manaPercent = i(manaMatch[2]);
+    if (manaPercent > 0) {
+        manaMax = r(mana * 100 / manaPercent);
+    }
+    let pop = i(clip.match(/^Populace:([\d]+)/m)[1]);
+    let goldFromPop = i(clip.match(/^Poddaní\t([\d]+)/m)[1]);
+
+    let taxes = max(1, min(70, r(goldFromPop / pop / 0.000078)));
+
+    let parsed = {
+        gold: i(clip.match(/^Zlato:([\d]+)/m)[1]),
+        unitsCount: i(armyTurnSummary[1]),
+        goldPerTu: i(provinceTurnSummary[0]),
+        manaPerTu: i(provinceTurnSummary[1]),
+        popPerTu: i(provinceTurnSummary[2]),
+        mana: i(manaMatch[1]),
+        manaMax: manaMax,
+        pop: pop,
+        popMax: i(clip.match(/^CELKEM.*?\t([ \d]+)$/m)[1]),
+        taxes: taxes,
+        power: i(clip.match(/^Síla provincie:(\d+)/m)[1]),
+    }
+
+    console.log("Loaded from clipboard:", parsed);
+
+    return parsed;
+}
+
 /** @type Promise */
 let chartPromise = google.charts.load('current', {'packages': ['line', 'corechart']});
 
@@ -433,8 +475,36 @@ $(function () {
                 .find('.input-units-per-tu')
                 .val(r2(building.maxCount * unit.recruitSingleBuilding * $('.input-recruit-coefficient').val())).change();
         }
+    });
 
+    $('#load-from-ma').click(function() {
+        navigator.clipboard.readText()
+            .then(clip => {
+                if (clip.match(/Detailní rozpis staveb najdete v menu/) === null) {
+                    alert('Ve schránce není ctrl+a, ctrl+c z Hospodaření');
+                    return;
+                }
 
+                let parsed = parseClipboard(clip);
+
+                $('.input-gp').val(parsed.gold);
+                $('.input-gp-tu').val(parsed.goldPerTu);
+                $('.input-mn').val(parsed.mana);
+                $('.input-mn-tu').val(parsed.manaPerTu);
+                $('.input-mn-max').val(parsed.manaMax);
+                $('.input-pp').val(parsed.pop);
+                $('.input-pp-tu').val(parsed.popPerTu);
+                $('.input-pp-max').val(parsed.popMax);
+                $('.input-units-count').val(parsed.unitsCount);
+                $('.input-taxes').val(parsed.taxes);
+                $('.input-power').val(parsed.power);
+
+                anyInputChanged();
+            })
+            .catch(err => {
+                alert('Musíš povolit přístup ke schránce!');
+                console.error('Failed to read clipboard contents: ', err);
+            });
     });
 
     let defaultsJson = window.localStorage.getItem("defaults", null);
@@ -476,14 +546,4 @@ $(function () {
 
     addRemoveUnitsRows();
     fullSimulation();
-    // saveToLocalStorage();
-
-    // TODO parse clipboard?
-        console.log(navigator.clipboard.readText()
-            .then(text => {
-                console.log('Pasted content: ', text);
-            })
-            .catch(err => {
-                console.error('Failed to read clipboard contents: ', err);
-            }));
 });
