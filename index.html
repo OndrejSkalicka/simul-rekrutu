@@ -12,6 +12,11 @@
     <title>Savannah's Toolshopless Simul Rekrutu</title>
 </head>
 <body class="m-2">
+
+<div class="fixed-top container" id="ok-alert" style="display: none">
+    <div class="alert alert-success">OK!</div>
+</div>
+
 <h1>Savannah's Toolshopless Simul Rekrutu</h1>
 
 <div class="container-fluid">
@@ -93,20 +98,30 @@
     </div>
 
     <div class="row">
-        <div class="col">
+        <div class="col-4">
             <h2>Simulace Tahy</h2>
             <div id="turns">
 
             </div>
         </div>
         <div class="col">
-            <div id="chart-gold"></div>
-        </div>
-        <div class="col">
-            <div id="chart-mana"></div>
-        </div>
-        <div class="col">
-            <div id="chart-pop"></div>
+            <div class="row">
+                <div class="col">
+                    <div id="chart-gold"></div>
+                </div>
+                <div class="col">
+                    <div id="chart-mana"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div id="chart-power"></div>
+                </div>
+                <div class="col">
+                    <div id="chart-pop"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -116,14 +131,27 @@
         <div class="mb-2">
             <small>
                 <div>Tah č. <span class="turn-number"></span></div>
-                <div>zl: <span class="gp-gained"></span>, mn: <span class="mn-gained"></span>, pp: <span
-                        class="pp-gained"></span></div>
-                <div>Do armády jste narekrutoval <span class="recruited-count"></span> x <span
-                        class="recruited-unit-name"></span>, celkem <span class="recruited-total"></span></div>
-                <div>Cena za jednotky: <span class="recruited-cost-gp"></span>, <span class="recruited-cost-mn"></span>,
-                    <span class="recruited-cost-pp"></span></div>
-                <div>Zlato: <span class="province-gp"></span>, mana <span class="province-mn"></span>, <span
-                        class="province-pp"></span></div>
+                <div>
+                    zl: <span class="gp-gained"></span>,
+                    mn: <span class="mn-gained"></span>,
+                    pp: <span class="pp-gained"></span>
+                </div>
+                <div>Do armády jste narekrutoval <span class="recruited-count"></span>
+                    x <span class="recruited-unit-name"></span>,
+                    celkem <span class="recruited-total"></span>.
+                </div>
+                <div>
+                    Cena za jednotky:
+                    <span class="text-danger recruited-cost-gp"></span>,
+                    <span class="text-danger recruited-cost-mn"></span>,
+                    <span class="text-danger recruited-cost-pp"></span>.
+                </div>
+                <div>
+                    Zlato: <span class="province-gp"></span>,
+                    mana <span class="province-mn"></span>,
+                    pp <span class="province-pp"></span>,
+                    síla <span class="province-power"></span>.
+                </div>
             </small>
         </div>
     </div>

@@ -34,22 +34,6 @@ function i(s) {
     return parseInt(s.replace(" ", ""));
 }
 
-function changeUnitInput() {
-    let row = $(this).parents('.input-row');
-    /** @type Unit */
-    let unit = row.find('.input-unit option:selected').data('unit');
-    let unitsPerTu = row.find('.input-units-per-tu').val();
-    let turns = row.find('.input-tu').val();
-
-    let pwrPerTu = unitsPerTu * 0.4 * unit.power;
-
-    row.find('.input-power-per-tu').val(nf2(pwrPerTu));
-    row.find('.input-power-total').val(nf2(pwrPerTu * turns));
-
-    anyInputChanged();
-}
-
-
 /**
  *
  * @param {RecruitRequest[]} reqs
@@ -174,6 +158,7 @@ function fullSimulation() {
     let simulatedTurns = simulate(reqs, initialProvince);
     let goldRows = [];
     let manaRows = [];
+    let powerRows = [];
     let popRows = [];
 
     simulatedTurns.forEach(function (turn) {
@@ -196,6 +181,7 @@ function fullSimulation() {
         prettyNumberOutput(turnDiv.find('.province-gp'), turn.province.gold, false);
         prettyNumberOutput(turnDiv.find('.province-mn'), turn.province.mana, false);
         prettyNumberOutput(turnDiv.find('.province-pp'), turn.province.pop, false);
+        prettyNumberOutput(turnDiv.find('.province-power'), turn.province.power, false);
 
         turnDiv.prependTo(turnsDiv);
 
@@ -209,6 +195,11 @@ function fullSimulation() {
             'TU ' + (turn.number + 1),
             turn.province.mana,
             r(turn.province.manaPerTu),
+        ]);
+
+        powerRows.push([
+            'TU ' + (turn.number + 1),
+            r(turn.province.power),
         ]);
 
         popRows.push([
@@ -230,6 +221,10 @@ function fullSimulation() {
         manaData.addColumn('number', 'Mana');
         manaData.addColumn('number', 'Mana/TU');
         manaData.addRows(manaRows);
+        let powerData = new google.visualization.DataTable();
+        powerData.addColumn('string', 'Tah');
+        powerData.addColumn('number', 'Síla');
+        powerData.addRows(powerRows);
         let popData = new google.visualization.DataTable();
         popData.addColumn('string', 'Tah');
         popData.addColumn('number', 'Populace');
@@ -292,6 +287,25 @@ function fullSimulation() {
             }
         };
 
+        var powerOptions = {
+            title: 'Vývoj síly podle tahů',
+            height: 500,
+            series: {
+                0: {
+                    targetAxisIndex: 0,
+                    color: '#11a415',
+                    lineWidth: 4,
+                }
+            },
+            vAxes: {
+                0: {
+                    minValue: 0,
+                    title: 'Síla',
+                    baselineColor: 'red',
+                }
+            }
+        };
+
         var popOptions = {
             title: 'Vývoj populace podle tahů',
             height: 500,
@@ -322,6 +336,7 @@ function fullSimulation() {
 
         new google.visualization.LineChart(document.getElementById('chart-gold')).draw(goldData, goldOptions);
         new google.visualization.LineChart(document.getElementById('chart-mana')).draw(manaData, manaOptions);
+        new google.visualization.LineChart(document.getElementById('chart-power')).draw(powerData, powerOptions);
         new google.visualization.LineChart(document.getElementById('chart-pop')).draw(popData, popOptions);
     });
 }
@@ -428,6 +443,7 @@ function parseClipboard(clip) {
     }
 
     console.log("Loaded from clipboard:", parsed);
+    $('#ok-alert').show().delay(2000).fadeOut({duration: 500});
 
     return parsed;
 }
@@ -436,6 +452,25 @@ function parseClipboard(clip) {
 let chartPromise = google.charts.load('current', {'packages': ['line', 'corechart']});
 
 function anyInputChanged() {
+    // calculated values for unit input
+    $('#units-input .input-row').each(function () {
+        /** @type Unit */
+        let unit = $(this).find('.input-unit option:selected').data('unit');
+
+        if (typeof unit === 'undefined') {
+            return;
+        }
+
+        let unitsPerTu = $(this).find('.input-units-per-tu').val();
+        let turns = $(this).find('.input-tu').val();
+
+        let pwrPerTu = unitsPerTu * 0.4 * unit.power;
+
+        $(this).find('.input-power-per-tu').val(nf2(pwrPerTu));
+        $(this).find('.input-power-total').val(nf2(pwrPerTu * turns));
+    });
+
+
     console.log('anyInputChanged');
     saveToLocalStorage();
     fullSimulation();
@@ -540,10 +575,10 @@ $(function () {
         })
         .disableSelection();
 
-    $('.input-tu').change(changeUnitInput);
-    $('.input-units-per-tu').change(changeUnitInput);
+    $('.input-tu').change(anyInputChanged);
+    $('.input-units-per-tu').change(anyInputChanged);
     $('.input-row input').change(anyInputChanged);
 
     addRemoveUnitsRows();
-    fullSimulation();
+    anyInputChanged();
 });
