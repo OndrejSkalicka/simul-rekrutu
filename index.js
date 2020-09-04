@@ -33,6 +33,7 @@ function int(s) {
  * @param {SpellRequest[]} spellRequests
  */
 function simulate(reqs, initialProvince, spellRequests = []) {
+    console.log("Full recruit simulation commencing...");
 
     /** @type Turn[] */
     let turns = [];
@@ -413,60 +414,6 @@ function addRemoveSpellRows() {
     addRemoveGenericRows($('#spells-input li'), addEmptySpellRow);
 }
 
-function saveToLocalStorage() {
-    let requests = [];
-    let spellRequests = [];
-
-    $('#units-input .input-row').each(function () {
-        /** @type Unit */
-        let unit = $(this).find('.input-unit option:selected').data('unit');
-
-        if (typeof unit === 'undefined') {
-            return;
-        }
-
-        requests.push({
-            unitId: unit.id,
-            turns: parseInt($(this).find('.input-tu').val()),
-            unitsPerTurn: parseFloat($(this).find('.input-units-per-tu').val()),
-        })
-    });
-    $('#spells-input .input-row').each(function () {
-        /** @type Spell */
-        let spell = $(this).find('.input-spell option:selected').data('spell');
-
-        if (typeof spell === 'undefined') {
-            return;
-        }
-
-        spellRequests.push({
-            spellId: spell.id,
-            turnOffset: parseInt($(this).find('.input-tu-offset').val()),
-            xp: parseFloat($(this).find('.input-xp').val()),
-        })
-    });
-    let data = {
-        gp: int($('.input-gp').val()),
-        gpTu: int($('.input-gp-tu').val()),
-        mn: int($('.input-mn').val()),
-        mnTu: int($('.input-mn-tu').val()),
-        mnMax: int($('.input-mn-max').val()),
-        spellPower: int($('.input-spell-power').val()),
-        pp: int($('.input-pp').val()),
-        ppTu: int($('.input-pp-tu').val()),
-        ppMax: int($('.input-pp-max').val()),
-        unitsCount: int($('.input-units-count').val()),
-        taxes: int($('.input-taxes').val()),
-        power: int($('.input-power').val()),
-        recruitCoefficient: parseFloat($('.input-recruit-coefficient').val()),
-        maxSpellEffect: parseFloat($('.input-max-spell-effect').val()),
-        requests: requests,
-        spellRequests: spellRequests,
-    };
-
-    window.localStorage.setItem("savedInput", JSON.stringify(data));
-}
-
 function manualClipboard(callback) {
     let modal = $('#clipboard-modal');
 
@@ -512,7 +459,7 @@ function parseEconomyClipboard(clip) {
         taxes: taxes,
         power: int(clip.match(/^ *Síla provincie:(\d+)/m)[1]),
         spellPower: int(clip.match(/^ *Síla kouzel:(\d+)/m)[1]),
-    }
+    };
 
     console.log("Loaded from clipboard:", parsed);
     $('#ok-alert').show().delay(2000).fadeOut({duration: 500});
@@ -531,6 +478,70 @@ function parseEconomyClipboard(clip) {
     $('.input-spell-power').val(parsed.spellPower);
 
     anyInputChanged();
+}
+
+function parseSpellsClipboard(clip) {
+    if (clip.match(/Maximální seslatelný efekt kouzel:/) === null) {
+        alert('Ve schránce není ctrl+a, ctrl+c z Magie a kouzla');
+        return;
+    }
+
+    let parsed = {
+        maxSpellEffect: parseFloat(clip.match(/^ *Maximální seslatelný efekt kouzel: *([\d]+(\.\d+)?)\s+%/m)[1]) / 100.0,
+        regentId: int(clip.match(/^\(ID (\d+)\)$/mi)[1]),
+        spellXp: {},
+        spellRequests: [],
+    };
+
+    spells.forEach(spell => {
+        let rx = new RegExp("^" + spell.name + "\\t([\\d]+(\\.\\d+)?)%[^\\t]*\\tPouze sesilatel", "im");
+
+        let match = clip.match(rx);
+        if (match !== null) {
+            parsed.spellXp[spell.id] = parseFloat(match[1]) / 100.0;
+        }
+    });
+
+    let cumulativeOffset = 0;
+    Array.from(clip.matchAll(/^\d+\.\t\+(\d+)\t\d+\t([^\t]+)\t\((\d+)\)/mig)).forEach(spellRequestMatch => {
+        let regentId = int(spellRequestMatch[3]);
+        cumulativeOffset += int(spellRequestMatch[1]);
+
+        if (regentId !== parsed.regentId) {
+            return;
+        }
+
+        let spell = spellsByName[spellRequestMatch[2]];
+
+        if (typeof spell === 'undefined') {
+            return;
+        }
+
+        parsed.spellRequests.push({
+            spell: spell,
+            turnOffset: cumulativeOffset,
+        });
+
+        cumulativeOffset = 0;
+    });
+
+    // use the data!
+    spellsStoredXp = parsed.spellXp;
+
+    // clear existing spellz
+    $('#spells-input').empty();
+    parsed.spellRequests.forEach(spellRequest => {
+        let row = addEmptySpellRow();
+        row.find('.input-spell').val(spellRequest.spell.id);
+        row.find('.input-tu-offset').val(spellRequest.turnOffset);
+        row.find('.input-xp').val(spellEffectiveXp(spellRequest.spell) * 100.0);
+    });
+    addRemoveSpellRows();
+
+    console.log("Loaded from clipboard:", parsed);
+
+    anyInputChanged();
+    updateSpellInputDisplayXp();
 }
 
 /** @type Promise */
@@ -605,7 +616,63 @@ function initialSetup() {
                 xp: 13.37,
             },
         ],
+        spellsStoredXp: {},
     };
+}
+
+function saveToLocalStorage() {
+    let requests = [];
+    let spellRequests = [];
+
+    $('#units-input .input-row').each(function () {
+        /** @type Unit */
+        let unit = $(this).find('.input-unit option:selected').data('unit');
+
+        if (typeof unit === 'undefined') {
+            return;
+        }
+
+        requests.push({
+            unitId: unit.id,
+            turns: parseInt($(this).find('.input-tu').val()),
+            unitsPerTurn: parseFloat($(this).find('.input-units-per-tu').val()),
+        })
+    });
+    $('#spells-input .input-row').each(function () {
+        /** @type Spell */
+        let spell = $(this).find('.input-spell option:selected').data('spell');
+
+        if (typeof spell === 'undefined') {
+            return;
+        }
+
+        spellRequests.push({
+            spellId: spell.id,
+            turnOffset: parseInt($(this).find('.input-tu-offset').val()),
+            xp: parseFloat($(this).find('.input-xp').val()),
+        })
+    });
+    let data = {
+        gp: int($('.input-gp').val()),
+        gpTu: int($('.input-gp-tu').val()),
+        mn: int($('.input-mn').val()),
+        mnTu: int($('.input-mn-tu').val()),
+        mnMax: int($('.input-mn-max').val()),
+        spellPower: int($('.input-spell-power').val()),
+        pp: int($('.input-pp').val()),
+        ppTu: int($('.input-pp-tu').val()),
+        ppMax: int($('.input-pp-max').val()),
+        unitsCount: int($('.input-units-count').val()),
+        taxes: int($('.input-taxes').val()),
+        power: int($('.input-power').val()),
+        recruitCoefficient: parseFloat($('.input-recruit-coefficient').val()),
+        maxSpellEffect: parseFloat($('.input-max-spell-effect').val()),
+        requests: requests,
+        spellRequests: spellRequests,
+        spellsStoredXp: spellsStoredXp,
+    };
+
+    window.localStorage.setItem("savedInput", JSON.stringify(data));
 }
 
 function loadInputsFromJson(defaults) {
@@ -630,14 +697,62 @@ function loadInputsFromJson(defaults) {
         row.find('.input-unit').val(request.unitId);
         row.find('.input-tu').val(request.turns);
         row.find('.input-units-per-tu').val(request.unitsPerTurn);
-    })
+    });
     defaults.spellRequests.forEach(function (spellRequest) {
         let row = addEmptySpellRow();
         row.find('.input-spell').val(spellRequest.spellId);
         row.find('.input-tu-offset').val(spellRequest.turnOffset);
         row.find('.input-xp').val(spellRequest.xp);
-    })
+    });
+
+    spellsStoredXp = defaults.spellsStoredXp;
 }
+
+function parseClipboard(callback) {
+    if (typeof navigator.clipboard.readText === 'undefined') {
+        console.error('Clipboard.readText not available');
+        manualClipboard(callback);
+        return;
+    }
+    navigator.clipboard.readText()
+        .then(callback)
+        .catch(err => {
+            console.error('Failed to read clipboard contents: ', err);
+
+            if (err.message === 'Read permission denied.') {
+                manualClipboard(callback);
+            }
+        });
+}
+
+function updateSpellInputDisplayXp() {
+    $('.input-spell option').each((index, opt) => {
+        let option = $(opt);
+        let spell = option.data('spell');
+        if (typeof spell === 'undefined') {
+            return;
+        }
+
+        let xp = spellsStoredXp[spell.id];
+
+        if (typeof xp === 'undefined') {
+            option.text(spell.name);
+            return;
+        }
+
+        option.text(spell.name + ' [' + (xp * 100.0) + '%]');
+    });
+}
+
+function spellEffectiveXp(spell) {
+    let xp = spellsStoredXp[spell.id];
+    if (typeof xp === 'undefined') {
+        return 1.0;
+    }
+
+    return xp;
+}
+
 
 $(function () {
     // build template
@@ -670,6 +785,9 @@ $(function () {
         let unit = row.find('.input-unit option:selected').data('unit');
 
         if (typeof unit === 'undefined') {
+            row.find('.input-units-per-tu').val('');
+            row.find('.input-power-per-tu').val('');
+            row.find('.input-power-total').val('');
             return;
         }
 
@@ -689,46 +807,40 @@ $(function () {
         let spell = row.find('.input-spell option:selected').data('spell');
 
         if (typeof spell === 'undefined') {
+            row.find('.input-tu-offset').val('');
+            row.find('.input-xp').val('');
+            row.find('.input-tu-computed').val('');
+
             return;
         }
 
         row.find('.input-tu-offset').val(spell.turn);
+        row.find('.input-xp').val(spellEffectiveXp(spell) * 100.0);
     });
 
-    $('#load-from-ma').click(function () {
-        if (typeof navigator.clipboard.readText === 'undefined') {
-            console.error('Clipboard.readText not available');
-            manualClipboard(parseEconomyClipboard);
-            return;
-        }
-        navigator.clipboard.readText()
-            .then(parseEconomyClipboard)
-            .catch(err => {
-                console.error('Failed to read clipboard contents: ', err);
-                manualClipboard(parseEconomyClipboard);
-            });
-    });
+    $('#load-from-ma').click(() => parseClipboard(parseEconomyClipboard));
+    $('#load-spells-from-ma').click(() => parseClipboard(parseSpellsClipboard));
 
     $('.input-row input').change(anyInputChanged);
     $('.input-row select').change(anyInputChanged);
 
     // load from storage
-
     let savedInput = window.localStorage.getItem("savedInput");
     if (savedInput === null) {
         savedInput = "{}";
     }
-
     let defaults = $.extend(initialSetup(), JSON.parse(savedInput));
     loadInputsFromJson(defaults);
-
-    $("#units-input")
-        .sortable({
-            'update': addRemoveUnitsRows
-        })
-        .disableSelection();
+    updateSpellInputDisplayXp();
 
     addRemoveUnitsRows();
     addRemoveSpellRows();
+
+    // enable drag-drop
+    $("#units-input").sortable({'update': addRemoveUnitsRows}).disableSelection();
+
+    // ping recalc
     anyInputChanged();
+
+    // TODO Upon change of recruit coeff, change all non-overriden units/TU
 });

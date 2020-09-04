@@ -255,3 +255,11 @@ let spells = [
     new Spell(48, "Harmonie", 20, spellCallbackGold(4_000)),
     new Spell(49, "Elixír", 15, spellCallbackPop(600_000)),
 ];
+
+let spellsByName = {
+
+}
+spells.forEach(spell => spellsByName[spell.name] = spell);
+
+let spellsStoredXp = {
+}

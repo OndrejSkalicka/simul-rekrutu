@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="simul.css">
     <link rel="icon" href="favicon.ico">
     <title>Savannah's Toolshopless Simul Rekrutu</title>
 </head>
@@ -23,12 +24,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Tvůj prohlížeč nepodporuje přístup do schránky, dej ctrl+v níže</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <textarea id="modal-text" class="form-control" rows="5"></textarea>
+                <textarea id="modal-text" class="form-control form-control-sm" rows="5"></textarea>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="modal-load">Načíst!</button>
@@ -42,88 +43,93 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col">
-            <h2>Provincie
+            <h3>Provincie
                 <button type="button" class="btn btn-primary btn-sm" id="load-from-ma" title="Načíst z Hospodaření (ctrl+a, ctrl+c)">
                     <i class="fas fa-paste"></i>
                 </button>
-            </h2>
+            </h3>
             <div class="form-group">
                 <div class="input-row">
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Zlato</label>
-                            <input type="number" class="form-control input-gp">
+                            <label class="col-form-label-sm">Zlato</label>
+                            <input type="number" class="form-control form-control-sm input-gp">
                         </div>
                         <div class="form-group col-3">
-                            <label title="Celkem, vč. populace, jednotek.">Zlato/TU</label>
-                            <input type="number" class="form-control input-gp-tu">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-3">
-                            <label>Mana</label>
-                            <input type="number" class="form-control input-mn" value="0">
-                        </div>
-                        <div class="form-group col-3">
-                            <label>Mana/TU</label>
-                            <input type="number" class="form-control input-mn-tu" value="0">
-                        </div>
-                        <div class="form-group col-3">
-                            <label>Mana Max</label>
-                            <input type="number" class="form-control input-mn-max" value="0">
-                        </div>
-                        <div class="form-group col-3">
-                            <label>SK</label>
-                            <input type="number" class="form-control input-spell-power" value="0">
+                            <label class="col-form-label-sm" title="Celkem, vč. populace, jednotek.">Zlato/TU</label>
+                            <input type="number" class="form-control form-control-sm input-gp-tu">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Populace</label>
-                            <input type="number" class="form-control input-pp" value="0">
+                            <label class="col-form-label-sm">Mana</label>
+                            <input type="number" class="form-control form-control-sm input-mn" value="0">
+                        </div>
+                        <div class="form-group col-3">
+                            <label class="col-form-label-sm">Mana/TU</label>
+                            <input type="number" class="form-control form-control-sm input-mn-tu" value="0">
+                        </div>
+                        <div class="form-group col-3">
+                            <label class="col-form-label-sm">Mana Max</label>
+                            <input type="number" class="form-control form-control-sm input-mn-max" value="0">
+                        </div>
+                        <div class="form-group col-3">
+                            <label class="col-form-label-sm">SK</label>
+                            <input type="number" class="form-control form-control-sm input-spell-power" value="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label class="col-form-label-sm">Populace</label>
+                            <input type="number" class="form-control form-control-sm input-pp" value="0">
                         </div>
 
                         <div class="form-group col-3">
-                            <label>Populace/TU</label>
-                            <input type="number" class="form-control input-pp-tu" value="0">
+                            <label class="col-form-label-sm">Populace/TU</label>
+                            <input type="number" class="form-control form-control-sm input-pp-tu" value="0">
                         </div>
                         <div class="form-group col-3">
-                            <label>Populace max</label>
-                            <input type="number" class="form-control input-pp-max" value="0">
+                            <label class="col-form-label-sm">Populace max</label>
+                            <input type="number" class="form-control form-control-sm input-pp-max" value="0">
                         </div>
                         <div class="form-group col-3">
-                            <label>Počet jednotek</label>
-                            <input type="number" class="form-control input-units-count" value="0">
+                            <label class="col-form-label-sm">Počet jednotek</label>
+                            <input type="number" class="form-control form-control-sm input-units-count" value="0">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Daně</label>
-                            <input type="number" class="form-control input-taxes" min="1" max="70" value="70">
+                            <label class="col-form-label-sm">Daně</label>
+                            <input type="number" class="form-control form-control-sm input-taxes" min="1" max="70" value="70">
                         </div>
                         <div class="form-group col-3">
-                            <label>Síla</label>
-                            <input type="number" class="form-control input-power" value="0">
+                            <label class="col-form-label-sm">Síla</label>
+                            <input type="number" class="form-control form-control-sm input-power" value="0">
                         </div>
                         <div class="form-group col-3">
-                            <label>Max efekt kouzel (%)</label>
-                            <input type="number" class="form-control input-max-spell-effect" value="90.0">
+                            <label class="col-form-label-sm">Max efekt kouzel (%)</label>
+                            <input type="number" class="form-control form-control-sm input-max-spell-effect" value="90.0">
                         </div>
                         <div class="form-group col-3">
-                            <label title="Ovlivňuje předvyplněné 'Jednotek/TU' pro nové rekrutové řádky. 1.5 = 50% bonus na rekrut jednotek.">
+                            <label class="col-form-label-sm"
+                                   title="Ovlivňuje předvyplněné 'Jednotek/TU' pro nové rekrutové řádky. 1.5 = 50% bonus na rekrut jednotek.">
                                 Koeficient rekrutu <i class="fas fa-info-circle"></i>
                             </label>
-                            <input type="number" class="form-control input-recruit-coefficient" value="1.0" step="0.1">
+                            <input type="number" class="form-control form-control-sm input-recruit-coefficient" value="1.0" step="0.1">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col">
-            <h2>Simulované jednotky</h2>
+            <h3>Simulované jednotky</h3>
             <ol id="units-input">
             </ol>
-            <h2>Simulovaná kouzla</h2>
+            <h3>Simulovaná kouzla
+                <button type="button" class="btn btn-primary btn-sm" id="load-spells-from-ma" title="Načíst z Hospodaření (ctrl+a, ctrl+c)">
+                    <i class="fas fa-paste"></i>
+                </button>
+            </h3>
             <ol id="spells-input">
             </ol>
         </div>
@@ -131,7 +137,7 @@
 
     <div class="row">
         <div class="col-3">
-            <h2>Simulace Tahy</h2>
+            <h3>Simulace Tahy</h3>
             <div id="turns">
 
             </div>
@@ -185,26 +191,26 @@
         <li>
             <div class="form-row input-row">
                 <div class="form-group col">
-                    <label>Jednotka</label>
-                    <select class="form-control input-unit input-selector">
+                    <label class="col-form-label-sm">Jednotka</label>
+                    <select class="form-control form-control-sm input-unit input-selector">
                         <option value="0">---</option>
                     </select>
                 </div>
                 <div class="form-group col">
-                    <label>Počet TU</label>
-                    <input type="number" class="form-control input-tu" placeholder="0" value="10">
+                    <label class="col-form-label-sm">Počet TU</label>
+                    <input type="number" class="form-control form-control-sm input-tu" placeholder="0" value="10">
                 </div>
                 <div class="form-group col">
-                    <label>Jednotek/TU</label>
-                    <input type="number" class="form-control input-units-per-tu" placeholder="0.0">
+                    <label class="col-form-label-sm">Jednotek/TU</label>
+                    <input type="number" class="form-control form-control-sm input-units-per-tu">
                 </div>
                 <div class="form-group col">
-                    <label>PWR/TU</label>
-                    <input type="text" class="form-control input-power-per-tu" readonly>
+                    <label class="col-form-label-sm">PWR/TU</label>
+                    <input type="text" class="form-control form-control-sm input-power-per-tu" readonly>
                 </div>
                 <div class="form-group col">
-                    <label>PWR total</label>
-                    <input type="text" class="form-control input-power-total" readonly>
+                    <label class="col-form-label-sm">PWR total</label>
+                    <input type="text" class="form-control form-control-sm input-power-total" readonly>
                 </div>
             </div>
         </li>
@@ -214,22 +220,22 @@
         <li>
         <div class="form-row input-row">
             <div class="form-group col">
-                <label>Kouzlo</label>
-                <select class="form-control input-spell input-selector">
+                <label class="col-form-label-sm">Kouzlo</label>
+                <select class="form-control form-control-sm input-spell input-selector">
                     <option value="0">---</option>
                 </select>
             </div>
             <div class="form-group col">
-                <label>TU po minulém kouzle</label>
-                <input type="number" class="form-control input-tu-offset" >
+                <label class="col-form-label-sm">TU po minulém kouzle</label>
+                <input type="number" class="form-control form-control-sm input-tu-offset" >
             </div>
             <div class="form-group col">
-                <label>TU</label>
-                <input type="number" class="form-control input-tu-computed" readonly>
+                <label class="col-form-label-sm">TU</label>
+                <input type="number" class="form-control form-control-sm input-tu-computed" readonly>
             </div>
             <div class="form-group col">
-                <label>Vytrénovanost</label>
-                <input type="number" class="form-control input-xp">
+                <label class="col-form-label-sm">Vytrénovanost</label>
+                <input type="number" class="form-control form-control-sm input-xp">
             </div>
         </div>
     </li>
