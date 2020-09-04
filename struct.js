@@ -149,29 +149,38 @@ class Turn {
 class Spell {
     /**
      *
-     * @param {string} name
-     * @param {float} xp
-     * @param {int} turn
+     * @param id
+     * @param name
+     * @param turn
+     * @param {function} impl
      */
-    constructor(name, xp, turn) {
+    constructor(id, name, turn, impl) {
+        this.id = id;
         this.name = name;
-        this.xp = xp;
         this.turn = turn;
+        this.impl = impl;
     }
 
     /**
      * @param {Province} province
-     * @returns {Province}
+     * @param {float} spellXp
+     * @returns {string|null}
      */
-    cast(province) {
-        switch(this.name) {
-            case 'Klid a mír':
-                let extraPop = r(600000 * province.spellPower / 32 * min(this.xp, province.maxSpellEffect));
-                province.pop += extraPop;
-                return 'Kouzlo magicky přidalo ' + nf0(extraPop) + ' lidí.';
+    cast(province, spellXp) {
+        return this.impl(province, min(spellXp, province.maxSpellEffect));
+    }
+}
 
-            default:
-                return null;
-        }
+class SpellRequest {
+    /**
+     *
+     * @param {Spell} spell
+     * @param {int} turnOffset
+     * @param {float} xp
+     */
+    constructor(spell, turnOffset, xp) {
+        this.spell = spell;
+        this.turnOffset = turnOffset;
+        this.xp = xp;
     }
 }

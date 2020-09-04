@@ -210,8 +210,48 @@ let professions = [
 
 let units = {};
 
-professions.forEach(function(profession) {
-    profession.units.forEach(function(unit) {
+professions.forEach(function (profession) {
+    profession.units.forEach(function (unit) {
         units[unit.id] = unit;
     });
 });
+
+function spellCallbackPopGold(maxPop, goldPerSpellPower) {
+    return function (province, xp) {
+        let extraPop = r(maxPop * xp);
+        let extraGold = r(goldPerSpellPower * province.spellPower * xp);
+
+        province.pop += extraPop;
+        province.gold += extraGold;
+        return 'Kouzlo magicky přidalo ' + nf0(extraPop) + ' lidí a ' + nf0(extraGold) + ' zlata.';
+    }
+}
+
+function spellCallbackGold(goldPerSpellPower) {
+    return function (province, xp) {
+        let extraGold = r(goldPerSpellPower * province.spellPower * xp);
+
+        province.gold += extraGold;
+        return 'Kouzlo magicky přidalo ' + nf0(extraGold) + ' zlata.';
+    }
+}
+
+function spellCallbackPop(maxPop) {
+    return function (province, xp) {
+        let extraPop = r(maxPop * xp);
+
+        province.pop += extraPop;
+        return 'Kouzlo magicky přidalo ' + nf0(extraPop) + ' lidí.';
+    }
+}
+
+let spells = [
+    new Spell(42, "Klid a mír", 20, spellCallbackPop(600_000)),
+    new Spell(43, "Láska", 15, spellCallbackPopGold(400_000, 4_000)),
+    new Spell(44, "Ódinův zpěv", 25, spellCallbackPopGold(400_000, 9_000)),
+    new Spell(45, "Populační exploze", 15, spellCallbackPopGold(400_000, 4_000)),
+    new Spell(46, "Poklad", 30, spellCallbackGold(15_000)),
+    new Spell(47, "Blahobyt", 15, spellCallbackPopGold(230_000, 5_000)),
+    new Spell(48, "Harmonie", 20, spellCallbackGold(4_000)),
+    new Spell(49, "Elixír", 15, spellCallbackPop(600_000)),
+];

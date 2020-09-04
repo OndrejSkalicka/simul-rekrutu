@@ -1,15 +1,3 @@
-function r2(n) {
-    return n.toFixed(2)
-}
-
-function nf2(n) {
-    return r2(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")
-}
-
-function nf0(n) {
-    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-}
-
 function r(n) {
     return Math.round(n);
 }
@@ -30,7 +18,11 @@ function max(a, b) {
     return Math.max(a, b);
 }
 
-function i(s) {
+function int(s) {
+    // shorthand for jquery fields
+    if (s instanceof $) {
+        return int(s.val());
+    }
     return parseInt(s.replace(" ", ""));
 }
 
@@ -38,21 +30,18 @@ function i(s) {
  *
  * @param {RecruitRequest[]} reqs
  * @param {Province} initialProvince
- * @param {Spell[]} spells
+ * @param {SpellRequest[]} spellRequests
  */
-function simulate(reqs, initialProvince, spells = []) {
-    // TODO remove
-    spells = [
-        new Spell('Klid a mír', 1.0, 2),
-        new Spell('Klid a mír', 0.5, 4),
-    ]
+function simulate(reqs, initialProvince, spellRequests = []) {
 
     /** @type Turn[] */
     let turns = [];
     let currentProvince = initialProvince;
-    let spellsByTurn = {};
-    spells.forEach(function (spell) {
-        spellsByTurn[spell.turn] = spell;
+    let spellRequestsByTurn = {};
+    let currentSpellTurn = 0;
+    spellRequests.forEach(function (spellRequest) {
+        currentSpellTurn += spellRequest.turnOffset;
+        spellRequestsByTurn[currentSpellTurn] = spellRequest;
     });
 
     reqs.forEach(function (req) {
@@ -61,11 +50,13 @@ function simulate(reqs, initialProvince, spells = []) {
             let turnNumber = turns.length;
             currentProvince = currentProvince.clone();
 
-            /** @type Spell */
-            let spell = spellsByTurn[turnNumber + 1];
+            /** @type SpellRequest */
+            let spellRequest = spellRequestsByTurn[turnNumber + 1];
             let spellText = null;
-            if (typeof spell !== 'undefined') {
-                spellText = spell.cast(currentProvince);
+            let spell = null;
+            if (typeof spellRequest !== 'undefined') {
+                spell = spellRequest.spell;
+                spellText = spellRequest.spell.cast(currentProvince, spellRequest.xp);
             }
 
             // only count fully recruited units
@@ -135,18 +126,18 @@ function fullSimulation() {
     let taxes = parseInt($('.input-taxes').val());
 
     let initialProvince = new Province(
-        i($('.input-gp').val()),
-        i($('.input-gp-tu').val()) - (0.000078 * pop * taxes),
-        i($('.input-mn').val()),
-        i($('.input-mn-max').val()),
-        i($('.input-mn-tu').val()),
+        int($('.input-gp').val()),
+        int($('.input-gp-tu').val()) - (0.000078 * pop * taxes),
+        int($('.input-mn').val()),
+        int($('.input-mn-max').val()),
+        int($('.input-mn-tu').val()),
         pop,
-        i($('.input-pp-max').val()),
+        int($('.input-pp-max').val()),
         parseInt($('.input-pp-tu').val()) - (pop * (0.0065 - 0.00005 * taxes)),
-        i($('.input-power').val()),
+        int($('.input-power').val()),
         taxes,
-        i($('.input-units-count').val()),
-        i($('.input-spell-power').val()),
+        int($('.input-units-count').val()),
+        int($('.input-spell-power').val()),
         parseFloat($('.input-max-spell-effect').val() / 100.0)
     );
 
@@ -165,8 +156,25 @@ function fullSimulation() {
         ));
     });
 
+    let spellRequests = [];
+    $('#spells-input .input-row').each(function () {
+        let spell = $(this).find('.input-spell option:selected').data('spell');
 
-    let simulatedTurns = simulate(reqs, initialProvince);
+        if (typeof spell === 'undefined') {
+            return;
+        }
+
+        spellRequests.push(
+            new SpellRequest(
+                spell,
+                int($(this).find('.input-tu-offset').val()),
+                parseFloat($(this).find('.input-xp').val()) / 100.0
+            )
+        );
+    });
+
+
+    let simulatedTurns = simulate(reqs, initialProvince, spellRequests);
     let goldRows = [];
     let manaRows = [];
     let powerRows = [];
@@ -358,29 +366,33 @@ function fullSimulation() {
     });
 }
 
+function addEmptySpellRow() {
+    return $('#template-spell > li').clone(true, true).appendTo($('#spells-input'));
+}
+
 function addEmptyUnitRow() {
     return $('#template-unit > li').clone(true, true).appendTo($('#units-input'));
 }
 
-function addRemoveUnitsRows() {
+function addRemoveGenericRows(target, newRowCallback) {
     // basically the goal is to keep 'exactly one' blank row
     let last = null;
-    let reversedLis = $('#units-input li').get().reverse();
+    let reversedLis = target.get().reverse();
 
     if (reversedLis.length === 0) {
         // no rows
-        addEmptyUnitRow();
+        newRowCallback();
         return;
     }
 
-    if (parseInt($(reversedLis[0]).find('.input-unit option:selected').val()) !== 0) {
+    if (parseInt($(reversedLis[0]).find('.input-selector option:selected').val()) !== 0) {
         // last row ain't an empty
-        addEmptyUnitRow();
+        newRowCallback();
         return;
     }
 
     reversedLis.some(function (li) {
-        let unitId = parseInt($(li).find('.input-unit option:selected').val());
+        let unitId = parseInt($(li).find('.input-selector option:selected').val());
 
         if (unitId > 0) return true;
 
@@ -393,8 +405,17 @@ function addRemoveUnitsRows() {
     });
 }
 
+function addRemoveUnitsRows() {
+    addRemoveGenericRows($('#units-input li'), addEmptyUnitRow);
+}
+
+function addRemoveSpellRows() {
+    addRemoveGenericRows($('#spells-input li'), addEmptySpellRow);
+}
+
 function saveToLocalStorage() {
     let requests = [];
+    let spellRequests = [];
 
     $('#units-input .input-row').each(function () {
         /** @type Unit */
@@ -410,25 +431,40 @@ function saveToLocalStorage() {
             unitsPerTurn: parseFloat($(this).find('.input-units-per-tu').val()),
         })
     });
+    $('#spells-input .input-row').each(function () {
+        /** @type Spell */
+        let spell = $(this).find('.input-spell option:selected').data('spell');
+
+        if (typeof spell === 'undefined') {
+            return;
+        }
+
+        spellRequests.push({
+            spellId: spell.id,
+            turnOffset: parseInt($(this).find('.input-tu-offset').val()),
+            xp: parseFloat($(this).find('.input-xp').val()),
+        })
+    });
     let data = {
-        gp: i($('.input-gp').val()),
-        gpTu: i($('.input-gp-tu').val()),
-        mn: i($('.input-mn').val()),
-        mnTu: i($('.input-mn-tu').val()),
-        mnMax: i($('.input-mn-max').val()),
-        spellPower: i($('.input-spell-power').val()),
-        pp: i($('.input-pp').val()),
-        ppTu: i($('.input-pp-tu').val()),
-        ppMax: i($('.input-pp-max').val()),
-        unitsCount: i($('.input-units-count').val()),
-        taxes: i($('.input-taxes').val()),
-        power: i($('.input-power').val()),
+        gp: int($('.input-gp').val()),
+        gpTu: int($('.input-gp-tu').val()),
+        mn: int($('.input-mn').val()),
+        mnTu: int($('.input-mn-tu').val()),
+        mnMax: int($('.input-mn-max').val()),
+        spellPower: int($('.input-spell-power').val()),
+        pp: int($('.input-pp').val()),
+        ppTu: int($('.input-pp-tu').val()),
+        ppMax: int($('.input-pp-max').val()),
+        unitsCount: int($('.input-units-count').val()),
+        taxes: int($('.input-taxes').val()),
+        power: int($('.input-power').val()),
         recruitCoefficient: parseFloat($('.input-recruit-coefficient').val()),
         maxSpellEffect: parseFloat($('.input-max-spell-effect').val()),
-        requests: requests
+        requests: requests,
+        spellRequests: spellRequests,
     };
 
-    window.localStorage.setItem("defaults", JSON.stringify(data));
+    window.localStorage.setItem("savedInput", JSON.stringify(data));
 }
 
 function manualClipboard(callback) {
@@ -452,30 +488,30 @@ function parseEconomyClipboard(clip) {
     let armyTurnSummary = clip.match(/^CELKEM ZA TAH ?\t([-\d]* ?\t[-\d]* ?\t[-\d]* ?\t[-\d]* ?\t[-\d]*)/im)[1].split('\t');
     let provinceTurnSummary = clip.match(/^CELKEM ZA TAH\t([-\d]* ?\t[-\d]* ?\t[-\d]*)$/im)[1].split("\t");
     let manaMatch = clip.match(/^ *Mana: ([- \d]+) \(([-\d]+)%\)/m);
-    let mana = i(manaMatch[1]);
+    let mana = int(manaMatch[1]);
     let manaMax = 0;
-    let manaPercent = i(manaMatch[2]);
+    let manaPercent = int(manaMatch[2]);
     if (manaPercent > 0) {
         manaMax = r(mana * 100 / manaPercent);
     }
-    let pop = i(clip.match(/^ *Populace:([\d]+)/m)[1]);
-    let goldFromPop = i(clip.match(/^Poddaní\t([\d]+)/m)[1]);
+    let pop = int(clip.match(/^ *Populace:([\d]+)/m)[1]);
+    let goldFromPop = int(clip.match(/^Poddaní\t([\d]+)/m)[1]);
 
     let taxes = max(1, min(70, r(goldFromPop / pop / 0.000078)));
 
     let parsed = {
-        gold: i(clip.match(/^ *Zlato:([\d]+)/m)[1]),
-        unitsCount: i(armyTurnSummary[1]),
-        goldPerTu: i(provinceTurnSummary[0]),
-        manaPerTu: i(provinceTurnSummary[1]),
-        popPerTu: i(provinceTurnSummary[2]),
-        mana: i(manaMatch[1]),
+        gold: int(clip.match(/^ *Zlato:([\d]+)/m)[1]),
+        unitsCount: int(armyTurnSummary[1]),
+        goldPerTu: int(provinceTurnSummary[0]),
+        manaPerTu: int(provinceTurnSummary[1]),
+        popPerTu: int(provinceTurnSummary[2]),
+        mana: int(manaMatch[1]),
         manaMax: manaMax,
         pop: pop,
-        popMax: i(clip.match(/^CELKEM\s*?[ \d]+ ?\t([ \d]+)$/mi)[1]),
+        popMax: int(clip.match(/^CELKEM\s*?[ \d]+ ?\t([ \d]+)$/mi)[1]),
         taxes: taxes,
-        power: i(clip.match(/^ *Síla provincie:(\d+)/m)[1]),
-        spellPower: i(clip.match(/^ *Síla kouzel:(\d+)/m)[1]),
+        power: int(clip.match(/^ *Síla provincie:(\d+)/m)[1]),
+        spellPower: int(clip.match(/^ *Síla kouzel:(\d+)/m)[1]),
     }
 
     console.log("Loaded from clipboard:", parsed);
@@ -519,6 +555,21 @@ function anyInputChanged() {
         $(this).find('.input-power-total').val(nf2(pwrPerTu * turns));
     });
 
+    // calculated values for spell input
+    let spellTurn = 0;
+    $('#spells-input .input-row').each(function () {
+        /** @type Spell */
+        let spell = $(this).find('.input-spell option:selected').data('spell');
+
+        if (typeof spell === 'undefined') {
+            return;
+        }
+
+        spellTurn += int($(this).find('.input-tu-offset'));
+
+        $(this).find('.input-tu-computed').val(spellTurn);
+    });
+
 
     saveToLocalStorage();
     fullSimulation();
@@ -531,6 +582,7 @@ function initialSetup() {
         mn: 45000,
         mnTu: 2000,
         mnMax: 50000,
+        spellPower: 30,
         pp: 200000,
         ppTu: 600,
         ppMax: 250000,
@@ -539,18 +591,58 @@ function initialSetup() {
         power: 20000,
         recruitCoefficient: 1.0,
         maxSpellEffect: 90.0,
-        requests: [{
-            unitId: 5008,
-            turns: 10,
-            unitsPerTurn: 6.45,
-        }]
+        requests: [
+            {
+                unitId: 5008,
+                turns: 10,
+                unitsPerTurn: 6.45,
+            },
+        ],
+        spellRequests: [
+            {
+                spellId: 44, // TODO change once I get hold of real spell IDs
+                turnOffset: 5,
+                xp: 13.37,
+            },
+        ],
     };
+}
+
+function loadInputsFromJson(defaults) {
+    $('.input-gp').val(defaults.gp);
+    $('.input-gp-tu').val(defaults.gpTu);
+    $('.input-mn').val(defaults.mn);
+    $('.input-mn-tu').val(defaults.mnTu);
+    $('.input-mn-max').val(defaults.mnMax);
+    $('.input-spell-power').val(defaults.spellPower);
+    $('.input-pp').val(defaults.pp);
+    $('.input-pp-tu').val(defaults.ppTu);
+    $('.input-pp-max').val(defaults.ppMax);
+    $('.input-units-count').val(defaults.unitsCount);
+    $('.input-taxes').val(defaults.taxes);
+    $('.input-power').val(defaults.power);
+    $('.input-recruit-coefficient').val(defaults.recruitCoefficient);
+    $('.input-max-spell-effect').val(defaults.maxSpellEffect);
+
+
+    defaults.requests.forEach(function (request) {
+        let row = addEmptyUnitRow();
+        row.find('.input-unit').val(request.unitId);
+        row.find('.input-tu').val(request.turns);
+        row.find('.input-units-per-tu').val(request.unitsPerTurn);
+    })
+    defaults.spellRequests.forEach(function (spellRequest) {
+        let row = addEmptySpellRow();
+        row.find('.input-spell').val(spellRequest.spellId);
+        row.find('.input-tu-offset').val(spellRequest.turnOffset);
+        row.find('.input-xp').val(spellRequest.xp);
+    })
 }
 
 $(function () {
     // build template
     professions.forEach(function (profession) {
-        var optgroup = $('<optgroup>').attr('label', profession.name);
+        let optgroup = $('<optgroup>').attr('label', profession.name);
 
         profession.units.forEach(function (unit) {
             $('<option>')
@@ -560,6 +652,13 @@ $(function () {
         });
 
         optgroup.appendTo('.input-unit');
+    });
+
+    spells.forEach(function (spell) {
+        $('<option>')
+            .data('spell', spell)
+            .val(spell.id)
+            .text(spell.name).appendTo('.input-spell');
     });
 
     // bind events
@@ -582,6 +681,19 @@ $(function () {
                 .val(r2(building.maxCount * unit.recruitSingleBuilding * $('.input-recruit-coefficient').val())).change();
         }
     });
+    $('.input-spell').change(function () {
+        addRemoveSpellRows();
+
+        let row = $(this).parents('.input-row');
+        /** @type Spell */
+        let spell = row.find('.input-spell option:selected').data('spell');
+
+        if (typeof spell === 'undefined') {
+            return;
+        }
+
+        row.find('.input-tu-offset').val(spell.turn);
+    });
 
     $('#load-from-ma').click(function () {
         if (typeof navigator.clipboard.readText === 'undefined') {
@@ -597,37 +709,18 @@ $(function () {
             });
     });
 
-    let defaultsJson = window.localStorage.getItem("defaults");
-    if (defaultsJson === null) {
-        defaultsJson = JSON.stringify(initialSetup());
+    $('.input-row input').change(anyInputChanged);
+    $('.input-row select').change(anyInputChanged);
+
+    // load from storage
+
+    let savedInput = window.localStorage.getItem("savedInput");
+    if (savedInput === null) {
+        savedInput = "{}";
     }
 
-    if (defaultsJson !== null) {
-        let defaults = JSON.parse(defaultsJson);
-
-        $('.input-gp').val(defaults.gp);
-        $('.input-gp-tu').val(defaults.gpTu);
-        $('.input-mn').val(defaults.mn);
-        $('.input-mn-tu').val(defaults.mnTu);
-        $('.input-mn-max').val(defaults.mnMax);
-        $('.input-spell-power').val(defaults.spellPower);
-        $('.input-pp').val(defaults.pp);
-        $('.input-pp-tu').val(defaults.ppTu);
-        $('.input-pp-max').val(defaults.ppMax);
-        $('.input-units-count').val(defaults.unitsCount);
-        $('.input-taxes').val(defaults.taxes);
-        $('.input-power').val(defaults.power);
-        $('.input-recruit-coefficient').val(defaults.recruitCoefficient);
-        $('.input-max-spell-effect').val(defaults.maxSpellEffect);
-
-
-        defaults.requests.forEach(function (request) {
-            let row = addEmptyUnitRow();
-            row.find('.input-unit').val(request.unitId);
-            row.find('.input-tu').val(request.turns);
-            row.find('.input-units-per-tu').val(request.unitsPerTurn);
-        })
-    }
+    let defaults = $.extend(initialSetup(), JSON.parse(savedInput));
+    loadInputsFromJson(defaults);
 
     $("#units-input")
         .sortable({
@@ -635,12 +728,7 @@ $(function () {
         })
         .disableSelection();
 
-    $('.input-tu').change(anyInputChanged);
-    $('.input-units-per-tu').change(anyInputChanged);
-    $('.input-row input').change(anyInputChanged);
-
     addRemoveUnitsRows();
+    addRemoveSpellRows();
     anyInputChanged();
-
-    // TODO BUGFIX when dropping altogether item from Units, no re-simul is executed
 });
