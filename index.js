@@ -527,6 +527,7 @@ function parseSpellsClipboard(clip) {
 
     // use the data!
     spellsStoredXp = parsed.spellXp;
+    $('.input-max-spell-effect').val(parsed.maxSpellEffect * 100.0);
 
     // clear existing spellz
     $('#spells-input').empty();
