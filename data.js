@@ -246,14 +246,50 @@ function spellCallbackPop(maxPop) {
 }
 
 let spells = [
-    new Spell(42, "Klid a mír", 20, spellCallbackPop(600_000)),
-    new Spell(43, "Láska", 15, spellCallbackPopGold(400_000, 4_000)),
-    new Spell(44, "Ódinův zpěv", 25, spellCallbackPopGold(400_000, 9_000)),
-    new Spell(45, "Populační exploze", 15, spellCallbackPopGold(400_000, 4_000)),
-    new Spell(46, "Poklad", 30, spellCallbackGold(15_000)),
-    new Spell(47, "Blahobyt", 15, spellCallbackPopGold(230_000, 5_000)),
-    new Spell(48, "Harmonie", 20, spellCallbackGold(4_000)),
-    new Spell(49, "Elixír", 15, spellCallbackPop(600_000)),
+    new Spell(3505, "Klid a mír", 20, spellCallbackPop(600_000)),
+    new Spell(1008, "Láska", 15, spellCallbackPopGold(400_000, 4_000)),
+    new Spell(5503, "Ódinův zpěv", 25, spellCallbackPopGold(400_000, 9_000)),
+    new Spell(2009, "Populační exploze", 15, spellCallbackPopGold(400_000, 4_000)),
+    new Spell(4504, "Poklad", 30, spellCallbackGold(15_000)),
+    new Spell(5005, "Blahobyt", 15, spellCallbackPopGold(230_000, 3_000)),
+    new Spell(3009, "Harmonie", 20, spellCallbackGold(4_000)),
+    new Spell(2505, "Elixír", 15, spellCallbackPop(600_000)),
+    new Spell(4007, "Koncentrace", 8, (province, xp) => {
+        let extraMana = r(320_000 * xp);
+
+        province.mana += Math.min(province.manaMax, province.mana + extraMana);
+        return 'Kouzlo magicky přidalo ' + nf0(extraMana) + ' many.';
+    }),
+    new Spell(5008, "Štěstí", 15, (province, xp) => {
+        let extraMana = r(province.mana * 0.3 * xp);
+
+        province.mana += Math.min(province.manaMax, province.mana + extraMana);
+        return 'Kouzlo magicky přidalo ' + nf0(extraMana) + ' many.';
+    }),
+    new Spell(7005, "Transformace many", 16, (province, xp) => {
+        let lostMana = r(270_000 * xp);
+        let gainedGold = r(122_500 * xp);
+
+        if (province.mana > lostMana) {
+            province.mana -= lostMana;
+            province.gold += gainedGold;
+            return 'Kouzlo magicky přeměnilo ' + nf0(lostMana) + ' many v ' + nf0(gainedGold) + ' zlata.'
+        }
+
+        return 'Nedostatek many pro kouzlo!';
+    }),
+    new Spell(7004, "Transformace zlata", 10, (province, xp) => {
+        let lostGold = r(9_980 + 46_200 * xp);
+        let gainedMana = r(52_100 + 357_900 * xp);
+
+        if (province.gold > lostGold) {
+            province.gold -= lostGold;
+            province.mana += gainedMana;
+            return 'Kouzlo magicky přeměnilo ' + nf0(lostGold) + ' zlata v ' + nf0(gainedMana) + ' many.'
+        }
+
+        return 'Nedostatek zlata pro kouzlo!';
+    }),
 ];
 
 let spellsByName = {
