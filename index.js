@@ -275,12 +275,12 @@ function fullSimulation() {
                 0: {
                     minValue: 0,
                     title: 'Zlato',
-                    baselineColor: 'red',
+                    baselineColor: '#ff0000',
                 },
                 1: {
                     minValue: 0,
                     title: 'Zlato/TU',
-                    baselineColor: 'red',
+                    baselineColor: '#850000',
                 }
             }
         };
@@ -303,12 +303,12 @@ function fullSimulation() {
                 0: {
                     minValue: 0,
                     title: 'Mana',
-                    baselineColor: 'red',
+                    baselineColor: '#ff0000',
                 },
                 1: {
                     minValue: 0,
                     title: 'Mana/TU',
-                    baselineColor: 'red',
+                    baselineColor: '#850000',
                 }
             }
         };
@@ -327,7 +327,7 @@ function fullSimulation() {
                 0: {
                     minValue: 0,
                     title: 'Síla',
-                    baselineColor: 'red',
+                    baselineColor: '#ff0000',
                 }
             }
         };
@@ -350,12 +350,12 @@ function fullSimulation() {
                 0: {
                     minValue: 0,
                     title: 'Populace',
-                    baselineColor: 'red',
+                    baselineColor: '#ff0000',
                 },
                 1: {
                     minValue: 0,
                     title: 'Populace/TU',
-                    baselineColor: 'red',
+                    baselineColor: '#850000',
                 }
             }
         };
