@@ -110,12 +110,17 @@
                             <label class="col-form-label-sm">Max efekt kouzel (%)</label>
                             <input type="number" class="form-control form-control-sm input-max-spell-effect" value="90.0">
                         </div>
-                        <div class="form-group col-3">
+                        <div class="form-group col-2">
                             <label class="col-form-label-sm"
                                    title="Ovlivňuje předvyplněné 'Jednotek/TU' pro nové rekrutové řádky. 1.5 = 50% bonus na rekrut jednotek.">
                                 Koeficient rekrutu <i class="fas fa-info-circle"></i>
                             </label>
                             <input type="number" class="form-control form-control-sm input-recruit-coefficient" value="1.0" step="0.1">
+                        </div>
+                        <div class="form-group col-1">
+                            <button type="button" class="btn btn-primary btn-sm mt-2" id="load-recruit-coefficient-from-ma" title="Načíst z 'Správa budov' (ctrl+a, ctrl+c)">
+                                <i class="fas fa-paste"></i>
+                            </button>
                         </div>
                     </div>
                 </div>

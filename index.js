@@ -545,6 +545,23 @@ function parseSpellsClipboard(clip) {
     updateSpellInputDisplayXp();
 }
 
+function parseBuildingsClipboard(clip) {
+    if (clip.match(/Postavené stavby a jejich maximální výdělek/) === null) {
+        alert('Ve schránce není ctrl+a, ctrl+c z "Správa budov"');
+        return;
+    }
+
+    let cities = int(clip.match(/^Město\t\t(\d+)\t/mi)[1]);
+    let fortsMatch = clip.match(/^Pevnost\t\t(\d+)\t/mi);
+    let forts = fortsMatch === null ? 0 : int(fortsMatch[1]);
+    let recruitersMatch = clip.match(/^Sídlo verbíře\t\t(\d+)\t/mi);
+    let recruiters = recruitersMatch === null ? 0 : int(recruitersMatch[1]);
+
+    let bonus = (1 + recruiters / 4) * (1 + 4 * forts / cities);
+
+    $('.input-recruit-coefficient').val(nf2(bonus)).change();
+}
+
 /** @type Promise */
 let chartPromise = google.charts.load('current', {'packages': ['line', 'corechart']});
 
@@ -795,9 +812,10 @@ $(function () {
         let building = unit.recruitBuilding;
 
         if (building !== null) {
+            let unitsPerTurn = r2(building.maxCount * unit.recruitSingleBuilding * $('.input-recruit-coefficient').val());
             row
                 .find('.input-units-per-tu')
-                .val(r2(building.maxCount * unit.recruitSingleBuilding * $('.input-recruit-coefficient').val())).change();
+                .val(unitsPerTurn).change();
         }
     });
     $('.input-spell').change(function () {
@@ -818,9 +836,27 @@ $(function () {
         row.find('.input-tu-offset').val(spell.turn);
         row.find('.input-xp').val(spellEffectiveXp(spell) * 100.0);
     });
+    $('.input-recruit-coefficient').change(function() {
+        $('#units-input .input-row').each(function () {
+            /** @type Unit */
+            let unit = $(this).find('.input-unit option:selected').data('unit');
+
+            if (typeof unit === 'undefined') {
+                return;
+            }
+
+            let building = unit.recruitBuilding;
+
+            if (building !== null) {
+                let unitsPerTurn = r2(building.maxCount * unit.recruitSingleBuilding * $('.input-recruit-coefficient').val());
+                $(this).find('.input-units-per-tu').val(unitsPerTurn);
+            }
+        });
+    });
 
     $('#load-from-ma').click(() => parseClipboard(parseEconomyClipboard));
     $('#load-spells-from-ma').click(() => parseClipboard(parseSpellsClipboard));
+    $('#load-recruit-coefficient-from-ma').click(() => parseClipboard(parseBuildingsClipboard));
 
     $('.input-row input').change(anyInputChanged);
     $('.input-row select').change(anyInputChanged);
