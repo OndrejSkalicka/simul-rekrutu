@@ -771,6 +771,18 @@ function spellEffectiveXp(spell) {
     return xp;
 }
 
+function createShareLink() {
+    let base = window.location.href;
+
+    let loc = base.indexOf('#');
+    if (loc > 0) {
+        base = base.substring(0, loc);
+    }
+
+    navigator.clipboard.writeText(base + '#' + encodeURI(window.localStorage.getItem("savedInput")));
+    $('#copied-to-clipboard-alert').show().delay(2000).fadeOut({duration: 500});
+}
+
 
 $(function () {
     // build template
@@ -836,7 +848,7 @@ $(function () {
         row.find('.input-tu-offset').val(spell.turn);
         row.find('.input-xp').val(spellEffectiveXp(spell) * 100.0);
     });
-    $('.input-recruit-coefficient').change(function() {
+    $('.input-recruit-coefficient').change(function () {
         $('#units-input .input-row').each(function () {
             /** @type Unit */
             let unit = $(this).find('.input-unit option:selected').data('unit');
@@ -857,16 +869,25 @@ $(function () {
     $('#load-from-ma').click(() => parseClipboard(parseEconomyClipboard));
     $('#load-spells-from-ma').click(() => parseClipboard(parseSpellsClipboard));
     $('#load-recruit-coefficient-from-ma').click(() => parseClipboard(parseBuildingsClipboard));
+    $('#copy-link').click(createShareLink);
 
     $('.input-row input').change(anyInputChanged);
     $('.input-row select').change(anyInputChanged);
 
-    // load from storage
-    let savedInput = window.localStorage.getItem("savedInput");
-    if (savedInput === null) {
-        savedInput = "{}";
+    // load from hash
+    let jsonInput = window.location.hash;
+    if (jsonInput.startsWith("#")) {
+        jsonInput = decodeURIComponent(window.location.hash.substring(1));
+        history.pushState("", document.title, window.location.pathname + window.location.search);
+    } else {
+        // load from storage
+        jsonInput = window.localStorage.getItem("savedInput");
     }
-    let defaults = $.extend(initialSetup(), JSON.parse(savedInput));
+    // default / none
+    if (jsonInput === null) {
+        jsonInput = "{}";
+    }
+    let defaults = $.extend(initialSetup(), JSON.parse(jsonInput));
     loadInputsFromJson(defaults);
     updateSpellInputDisplayXp();
 
