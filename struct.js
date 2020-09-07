@@ -77,7 +77,8 @@ class Province {
     constructor(gold, goldPerTuStatic,
                 mana, manaMax, manaPerTu,
                 pop, popMax, popPerTuStatic,
-                power, taxes, unitsCount,
+                power, deadPower,
+                taxes, unitsCount,
                 spellPower, maxSpellEffect) {
         this.gold = gold;
         this.goldPerTuStatic = goldPerTuStatic;
@@ -88,6 +89,7 @@ class Province {
         this.popMax = popMax;
         this.popPerTuStatic = popPerTuStatic;
         this.power = power;
+        this.deadPower = deadPower;
         this.taxes = taxes;
         this.unitsCount = unitsCount;
         this.spellPower = spellPower;

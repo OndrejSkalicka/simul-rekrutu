@@ -127,18 +127,19 @@ function fullSimulation() {
     let taxes = parseInt($('.input-taxes').val());
 
     let initialProvince = new Province(
-        int($('.input-gp').val()),
+        int($('.input-gp')),
         int($('.input-gp-tu').val()) - (0.000078 * pop * taxes),
-        int($('.input-mn').val()),
-        int($('.input-mn-max').val()),
-        int($('.input-mn-tu').val()),
+        int($('.input-mn')),
+        int($('.input-mn-max')),
+        int($('.input-mn-tu')),
         pop,
-        int($('.input-pp-max').val()),
+        int($('.input-pp-max')),
         parseInt($('.input-pp-tu').val()) - (pop * (0.0065 - 0.00005 * taxes)),
-        int($('.input-power').val()),
+        int($('.input-power')),
+        int($('.input-dead-power')),
         taxes,
-        int($('.input-units-count').val()),
-        int($('.input-spell-power').val()),
+        int($('.input-units-count')),
+        int($('.input-spell-power')),
         parseFloat($('.input-max-spell-effect').val() / 100.0)
     );
 
@@ -202,6 +203,7 @@ function fullSimulation() {
         prettyNumberOutput(turnDiv.find('.province-mn'), turn.province.mana, false);
         prettyNumberOutput(turnDiv.find('.province-pp'), turn.province.pop, false);
         prettyNumberOutput(turnDiv.find('.province-power'), turn.province.power, false);
+        prettyNumberOutput(turnDiv.find('.province-army-power'), turn.province.power - turn.province.deadPower, false);
 
         if (turn.spellText !== null && typeof turn.spell !== 'undefined') {
             turnDiv.find('.spell-name').text(turn.spell.name);
@@ -225,7 +227,8 @@ function fullSimulation() {
 
         powerRows.push([
             'TU ' + (turn.number + 1),
-            r(turn.province.power),
+            r(turn.province.power - turn.province.deadPower),
+            r(turn.province.power)
         ]);
 
         popRows.push([
@@ -249,6 +252,7 @@ function fullSimulation() {
         manaData.addRows(manaRows);
         let powerData = new google.visualization.DataTable();
         powerData.addColumn('string', 'Tah');
+        powerData.addColumn('number', 'Síla Armády');
         powerData.addColumn('number', 'Síla');
         powerData.addRows(powerRows);
         let popData = new google.visualization.DataTable();
@@ -321,13 +325,22 @@ function fullSimulation() {
                     targetAxisIndex: 0,
                     color: '#11a415',
                     lineWidth: 4,
+                },
+                1: {
+                    targetAxisIndex: 0,
+                    color: '#0d540e',
                 }
             },
             vAxes: {
                 0: {
                     minValue: 0,
-                    title: 'Síla',
+                    title: 'Síla Armády',
                     baselineColor: '#ff0000',
+                },
+                1: {
+                    minValue: 0,
+                    title: 'Síla',
+                    baselineColor: '#850000',
                 }
             }
         };
@@ -461,6 +474,8 @@ function parseEconomyClipboard(clip) {
         spellPower: int(clip.match(/^ *Síla kouzel:(\d+)/m)[1]),
     };
 
+    parsed.deadPower = parsed.power - int(armyTurnSummary[0]);
+
     console.log("Loaded from clipboard:", parsed);
     $('#ok-alert').show().delay(2000).fadeOut({duration: 500});
 
@@ -475,6 +490,7 @@ function parseEconomyClipboard(clip) {
     $('.input-units-count').val(parsed.unitsCount);
     $('.input-taxes').val(parsed.taxes);
     $('.input-power').val(parsed.power);
+    $('.input-dead-power').val(parsed.deadPower);
     $('.input-spell-power').val(parsed.spellPower);
 
     anyInputChanged();
@@ -598,6 +614,7 @@ function anyInputChanged() {
 
         $(this).find('.input-tu-computed').val(spellTurn);
     });
+    $('.input-army-power').val(int($('.input-power')) - int($('.input-dead-power')));
 
 
     saveToLocalStorage();
@@ -618,6 +635,7 @@ function initialSetup() {
         unitsCount: 500,
         taxes: 70,
         power: 20000,
+        deadPower: 0,
         recruitCoefficient: 1.0,
         maxSpellEffect: 90.0,
         requests: [
@@ -683,6 +701,7 @@ function saveToLocalStorage() {
         unitsCount: int($('.input-units-count').val()),
         taxes: int($('.input-taxes').val()),
         power: int($('.input-power').val()),
+        deadPower: int($('.input-dead-power').val()),
         recruitCoefficient: parseFloat($('.input-recruit-coefficient').val()),
         maxSpellEffect: parseFloat($('.input-max-spell-effect').val()),
         requests: requests,
@@ -706,6 +725,7 @@ function loadInputsFromJson(defaults) {
     $('.input-units-count').val(defaults.unitsCount);
     $('.input-taxes').val(defaults.taxes);
     $('.input-power').val(defaults.power);
+    $('.input-dead-power').val(defaults.deadPower);
     $('.input-recruit-coefficient').val(defaults.recruitCoefficient);
     $('.input-max-spell-effect').val(defaults.maxSpellEffect);
 
@@ -899,6 +919,4 @@ $(function () {
 
     // ping recalc
     anyInputChanged();
-
-    // TODO Upon change of recruit coeff, change all non-overriden units/TU
 });

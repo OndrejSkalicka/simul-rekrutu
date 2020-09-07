@@ -55,7 +55,7 @@
         <div class="col">
             <h3>Provincie
                 <button type="button" class="btn btn-primary btn-sm" id="load-from-ma" title="Načíst z 'Hospodaření' (ctrl+a, ctrl+c)">
-                    <i class="fas fa-paste"></i>
+                    &lArr; Načíst z 'Hospodaření' <i class="fas fa-paste"></i>
                 </button>
             </h3>
             <div class="form-group">
@@ -113,24 +113,38 @@
                             <input type="number" class="form-control form-control-sm input-taxes" min="1" max="70" value="70">
                         </div>
                         <div class="form-group col-3">
-                            <label class="col-form-label-sm">Síla</label>
-                            <input type="number" class="form-control form-control-sm input-power" value="0">
-                        </div>
-                        <div class="form-group col-3">
                             <label class="col-form-label-sm">Max efekt kouzel (%)</label>
                             <input type="number" class="form-control form-control-sm input-max-spell-effect" value="90.0">
                         </div>
-                        <div class="form-group col-2">
+                        <div class="form-group col-3">
                             <label class="col-form-label-sm"
                                    title="Ovlivňuje předvyplněné 'Jednotek/TU' pro nové rekrutové řádky. 1.5 = 50% bonus na rekrut jednotek.">
                                 Koeficient rekrutu <i class="fas fa-info-circle"></i>
                             </label>
                             <input type="number" class="form-control form-control-sm input-recruit-coefficient" value="1.0" step="0.1">
                         </div>
-                        <div class="form-group col-1">
-                            <button type="button" class="btn btn-primary btn-sm mt-2" id="load-recruit-coefficient-from-ma" title="Načíst z 'Správa budov' (ctrl+a, ctrl+c)">
-                                <i class="fas fa-paste"></i>
+                        <div class="form-group col-3">
+                            <label class="col-form-label-sm">&lArr; Načíst ze 'Správa budov'</label>
+                            <button type="button"
+                                    class="btn btn-primary btn-sm btn-block"
+                                    id="load-recruit-coefficient-from-ma"
+                                    title="Načíst ze 'Správa budov' (ctrl+a, ctrl+c)">
+                                &lArr; <i class="fas fa-paste"></i>
                             </button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label class="col-form-label-sm">Síla</label>
+                            <input type="number" class="form-control form-control-sm input-power" value="0">
+                        </div>
+                        <div class="form-group col-3">
+                            <label class="col-form-label-sm">Mrtvá síla</label>
+                            <input type="number" class="form-control form-control-sm input-dead-power" value="0">
+                        </div>
+                        <div class="form-group col-3">
+                            <label class="col-form-label-sm">Síla armády</label>
+                            <input type="number" class="form-control form-control-sm input-army-power" value="0" readonly>
                         </div>
                     </div>
                 </div>
@@ -142,7 +156,7 @@
             </ol>
             <h3>Simulovaná kouzla
                 <button type="button" class="btn btn-primary btn-sm" id="load-spells-from-ma" title="Načíst z 'Magie a Kouzla' (ctrl+a, ctrl+c)">
-                    <i class="fas fa-paste"></i>
+                    &lArr; Načíst z 'Magie a Kouzla' <i class="fas fa-paste"></i>
                 </button>
             </h3>
             <ol id="spells-input">
@@ -189,10 +203,10 @@
                     <span class="text-danger recruited-cost-pp"></span>.
                 </div>
                 <div>
-                    Zlato: <span class="province-gp"></span>,
-                    mana <span class="province-mn"></span>,
+                    zl <span class="province-gp"></span>,
+                    mn <span class="province-mn"></span>,
                     pp <span class="province-pp"></span>,
-                    síla <span class="province-power"></span>.
+                    síla <span class="province-power"></span> (&#9876 <span class="province-army-power" title="Síla armády">42</span>).
                 </div>
                 <div class="text-warning d-none spell-block">
                     Sesílání <span class="spell-name"></span> bylo dokončeno.<br/>
@@ -233,27 +247,27 @@
 
     <ul id="template-spell">
         <li>
-        <div class="form-row input-row">
-            <div class="form-group col">
-                <label class="col-form-label-sm">Kouzlo</label>
-                <select class="form-control form-control-sm input-spell input-selector">
-                    <option value="0">---</option>
-                </select>
+            <div class="form-row input-row">
+                <div class="form-group col">
+                    <label class="col-form-label-sm">Kouzlo</label>
+                    <select class="form-control form-control-sm input-spell input-selector">
+                        <option value="0">---</option>
+                    </select>
+                </div>
+                <div class="form-group col">
+                    <label class="col-form-label-sm">TU po minulém kouzle</label>
+                    <input type="number" class="form-control form-control-sm input-tu-offset">
+                </div>
+                <div class="form-group col">
+                    <label class="col-form-label-sm">TU</label>
+                    <input type="number" class="form-control form-control-sm input-tu-computed" readonly>
+                </div>
+                <div class="form-group col">
+                    <label class="col-form-label-sm">Vytrénovanost</label>
+                    <input type="number" class="form-control form-control-sm input-xp">
+                </div>
             </div>
-            <div class="form-group col">
-                <label class="col-form-label-sm">TU po minulém kouzle</label>
-                <input type="number" class="form-control form-control-sm input-tu-offset" >
-            </div>
-            <div class="form-group col">
-                <label class="col-form-label-sm">TU</label>
-                <input type="number" class="form-control form-control-sm input-tu-computed" readonly>
-            </div>
-            <div class="form-group col">
-                <label class="col-form-label-sm">Vytrénovanost</label>
-                <input type="number" class="form-control form-control-sm input-xp">
-            </div>
-        </div>
-    </li>
+        </li>
     </ul>
 </div>
 
