@@ -755,10 +755,12 @@ function parseClipboard(callback) {
     navigator.clipboard.readText()
         .then(callback)
         .catch(err => {
-            console.error('Failed to read clipboard contents: ', err);
 
             if (err.message === 'Read permission denied.') {
                 manualClipboard(callback);
+            } else {
+                alert("Nepodařilo se zpracovat schránku. Jediný podporovaný prohlížeč pro toolshop je nyní Chrome.");
+                console.error('Failed to read clipboard contents: ', err);
             }
         });
 }
