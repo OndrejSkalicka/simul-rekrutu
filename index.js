@@ -227,8 +227,8 @@ function fullSimulation() {
 
         powerRows.push([
             'TU ' + (turn.number + 1),
+            r(turn.province.power),
             r(turn.province.power - turn.province.deadPower),
-            r(turn.province.power)
         ]);
 
         popRows.push([
@@ -252,8 +252,8 @@ function fullSimulation() {
         manaData.addRows(manaRows);
         let powerData = new google.visualization.DataTable();
         powerData.addColumn('string', 'Tah');
-        powerData.addColumn('number', 'Síla Armády');
         powerData.addColumn('number', 'Síla');
+        powerData.addColumn('number', 'Síla Armády');
         powerData.addRows(powerRows);
         let popData = new google.visualization.DataTable();
         popData.addColumn('string', 'Tah');
@@ -323,24 +323,24 @@ function fullSimulation() {
             series: {
                 0: {
                     targetAxisIndex: 0,
-                    color: '#11a415',
-                    lineWidth: 4,
+                    color: '#0d540e',
                 },
                 1: {
                     targetAxisIndex: 0,
-                    color: '#0d540e',
+                    color: '#11a415',
+                    lineWidth: 4,
                 }
             },
             vAxes: {
                 0: {
                     minValue: 0,
-                    title: 'Síla Armády',
-                    baselineColor: '#ff0000',
+                    title: 'Síla',
+                    baselineColor: '#850000',
                 },
                 1: {
                     minValue: 0,
-                    title: 'Síla',
-                    baselineColor: '#850000',
+                    title: 'Síla Armády',
+                    baselineColor: '#ff0000',
                 }
             }
         };
