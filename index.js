@@ -595,9 +595,11 @@ function anyInputChanged() {
         let turns = $(this).find('.input-tu').val();
 
         let pwrPerTu = unitsPerTu * 0.4 * unit.power;
+        let countTotal = f(unitsPerTu * turns);
 
         $(this).find('.input-power-per-tu').val(nf2(pwrPerTu));
-        $(this).find('.input-power-total').val(nf2(pwrPerTu * turns));
+        $(this).find('.input-count-total').val(nf0(countTotal));
+        $(this).find('.input-power-total').val(nf2(unit.power * 0.4 * countTotal));
     });
 
     // calculated values for spell input
@@ -839,6 +841,7 @@ $(function () {
         if (typeof unit === 'undefined') {
             row.find('.input-units-per-tu').val('');
             row.find('.input-power-per-tu').val('');
+            row.find('.input-count-total').val('');
             row.find('.input-power-total').val('');
             return;
         }
@@ -886,6 +889,16 @@ $(function () {
                 $(this).find('.input-units-per-tu').val(unitsPerTurn);
             }
         });
+    });
+    $('.button-delete-unit-input-row').click(function() {
+        $(this).parents('li').remove();
+        addRemoveUnitsRows();
+        anyInputChanged();
+    });
+    $('.button-delete-spell-input-row').click(function() {
+        $(this).parents('li').remove();
+        addRemoveSpellRows();
+        anyInputChanged();
     });
 
     $('#load-from-ma').click(() => parseClipboard(parseEconomyClipboard));
