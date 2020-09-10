@@ -464,9 +464,15 @@ function parseEconomyClipboard(clip) {
     if (skBase !== null) {
         sk = int(skBase[1]);
     }
+
+    let unitsCount = 0;
+    if (armyTurnSummary[1] !== "") {
+        unitsCount = int(armyTurnSummary[1]);
+    }
+
     let parsed = {
         gold: int(clip.match(/^ *Zlato:([\d]+)/m)[1]),
-        unitsCount: int(armyTurnSummary[1]),
+        unitsCount: unitsCount,
         goldPerTu: int(provinceTurnSummary[0]),
         manaPerTu: int(provinceTurnSummary[1]),
         popPerTu: int(provinceTurnSummary[2]),
@@ -479,7 +485,11 @@ function parseEconomyClipboard(clip) {
         spellPower: sk,
     };
 
-    parsed.deadPower = parsed.power - int(armyTurnSummary[0]);
+    let armyPower = 0;
+    if (armyTurnSummary[0] !== "") {
+        armyPower = int(armyTurnSummary[0]);
+    }
+    parsed.deadPower = parsed.power - armyPower;
 
     console.log("Loaded from clipboard:", parsed);
     $('#ok-alert').show().delay(2000).fadeOut({duration: 500});
