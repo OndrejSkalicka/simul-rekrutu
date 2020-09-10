@@ -459,6 +459,11 @@ function parseEconomyClipboard(clip) {
 
     let taxes = max(1, min(70, r(goldFromPop / pop / 0.000078)));
 
+    let skBase = clip.match(/^ *Síla kouzel:(\d+)/m);
+    let sk = 0;
+    if (skBase !== null) {
+        sk = int(skBase[1]);
+    }
     let parsed = {
         gold: int(clip.match(/^ *Zlato:([\d]+)/m)[1]),
         unitsCount: int(armyTurnSummary[1]),
@@ -471,7 +476,7 @@ function parseEconomyClipboard(clip) {
         popMax: int(clip.match(/^CELKEM\s*?[ \d]+ ?\t([ \d]+)$/mi)[1]),
         taxes: taxes,
         power: int(clip.match(/^ *Síla provincie:(\d+)/m)[1]),
-        spellPower: int(clip.match(/^ *Síla kouzel:(\d+)/m)[1]),
+        spellPower: sk,
     };
 
     parsed.deadPower = parsed.power - int(armyTurnSummary[0]);
