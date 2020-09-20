@@ -25,7 +25,7 @@
         tMinus = min + Math.floor(Math.random() * (max - min));
         console.log("Planning reload in ", tMinus);
 
-        timeoutId = setTimeout(() => 1/*location.reload()*/, tMinus * 1000);
+        timeoutId = setTimeout(() => location.reload(), tMinus * 1000);
         intervalId = setInterval(handleInterval, 1000);
         handleInterval();
     }
