@@ -18,6 +18,9 @@
     let max = parseInt(window.sessionStorage['reloader-max']) || 60;
     let threshold = parseInt(window.sessionStorage['reloader-threshold']) || 1000;
     let lastPower = parseInt(window.sessionStorage['reloader-last-power']) || -1;
+    let title = document.title;
+
+    console.log("T-Rex starting...");
 
     function planReload() {
         cancelReload();
@@ -25,13 +28,18 @@
         tMinus = min + Math.floor(Math.random() * (max - min));
         console.log("Planning reload in ", tMinus);
 
-        timeoutId = setTimeout(() => location.reload(), tMinus * 1000);
+        timeoutId = setTimeout(() => {
+            console.log("Executing reload");
+            location.reload();
+            console.log("Reload executed");
+        } , tMinus * 1000);
         intervalId = setInterval(handleInterval, 1000);
         handleInterval();
     }
 
     function handleInterval() {
         buttonEnabled.find('.timer').text(tMinus + "s");
+        // document.title = title + ' [' + tMinus + 's]';
 
         tMinus--;
         if (tMinus < 0) {
@@ -59,6 +67,7 @@
     function enableReload() {
         buttonEnabled.show();
         buttonDisabled.hide();
+        $('.reloader-data').show();
         planReload();
         window.sessionStorage['reloader-enabled'] = 'true';
         enabled = true;
@@ -67,9 +76,18 @@
     function disableReload() {
         buttonEnabled.hide();
         buttonDisabled.show();
+        $('.reloader-data').hide();
         cancelReload();
         window.sessionStorage['reloader-enabled'] = 'false';
         enabled = false;
+    }
+
+    function init() {
+        if (enabled) {
+            enableReload();
+        } else {
+            disableReload();
+        }
     }
 
     let mainDiv = $('<div id="reloader">');
@@ -84,7 +102,7 @@
         .appendTo(rowDiv)
         .click(enableReload);
 
-    rowDiv = $('<div>').appendTo(mainDiv);
+    rowDiv = $('<div class="reloader-data">').appendTo(mainDiv);
     $('<label>Min:&nbsp;<input id="reloader-min" style="width: 30px;"></label>')
         .appendTo(rowDiv);
 
@@ -105,7 +123,7 @@
         })
         .val(max);
 
-    rowDiv = $('<div>').appendTo(mainDiv);
+    rowDiv = $('<div class="reloader-data">').appendTo(mainDiv);
     $('<label>Threshold:&nbsp;<input id="reloader-threshold" style="width: 60px;"></label>')
         .appendTo(rowDiv);
 
@@ -119,18 +137,17 @@
     let currentPower = parseInt($('.value_power').text());
     let drop = lastPower > 0 ? lastPower - currentPower : 0;
 
-    if (drop > threshold) {
-        new Audio("http://soundbible.com/grab.php?id=1165&type=mp3").play();
-        alert("Pokles! Z: " + lastPower + ", na: " + currentPower + ", pokles: " + drop);
-    }
-
     console.log("Last power: ", lastPower, "current power: ", currentPower, "drop: ", drop);
     window.sessionStorage['reloader-last-power'] = currentPower;
 
-    if (enabled) {
-        enableReload();
+    if (drop > threshold) {
+        new Audio("http://soundbible.com/grab.php?id=1165&type=mp3").play();
+        setTimeout(function() {
+            alert("Pokles! Z: " + lastPower + ", na: " + currentPower + ", pokles: " + drop);
+            // with alert, only init after the alert is closed
+            init();
+        }, 5000);
     } else {
-        disableReload();
+        init();
     }
-
 })();
