@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         New Userscript
+// @name         MA T-Rex reloader
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      1.0
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.meliorannis.com/*
@@ -11,8 +11,7 @@
 (function () {
     'use strict';
     let timeoutId = -1;
-    let intervalId = -1;
-    let tMinus = -1;
+    let refreshIn = -1;
     let enabled = window.sessionStorage['reloader-enabled'] === 'true';
     let min = parseInt(window.sessionStorage['reloader-min']) || 5;
     let max = parseInt(window.sessionStorage['reloader-max']) || 60;
@@ -25,27 +24,17 @@
     function planReload() {
         cancelReload();
 
-        tMinus = min + Math.floor(Math.random() * (max - min));
-        console.log("Planning reload in ", tMinus);
+        refreshIn = min + Math.floor(Math.random() * (max - min));
+        console.log("Planning reload in ", refreshIn);
 
         timeoutId = setTimeout(() => {
             console.log("Executing reload");
             location.reload();
             console.log("Reload executed");
-        } , tMinus * 1000);
-        intervalId = setInterval(handleInterval, 1000);
-        handleInterval();
-    }
+        } , refreshIn * 1000);
 
-    function handleInterval() {
-        buttonEnabled.find('.timer').text(tMinus + "s");
-        // document.title = title + ' [' + tMinus + 's]';
-
-        tMinus--;
-        if (tMinus < 0) {
-            clearInterval(intervalId);
-            intervalId = -1;
-        }
+        let triggersAt = new Date(Date.now() + refreshIn * 1000);
+        document.title = title + ' [' + triggersAt.toLocaleTimeString("cs-CZ") + ']';
     }
 
     function cancelReload() {
@@ -54,13 +43,6 @@
             timeoutId = -1;
 
             console.log("Timeout cleared");
-        }
-
-        if (intervalId >= 0) {
-            clearInterval(intervalId);
-            intervalId = -1;
-
-            console.log("Interval cleared");
         }
     }
 
