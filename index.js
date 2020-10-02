@@ -58,6 +58,12 @@ function simulate(reqs, initialProvince, spellRequests = []) {
             if (typeof spellRequest !== 'undefined') {
                 spell = spellRequest.spell;
                 spellText = spellRequest.spell.cast(currentProvince, spellRequest.xp);
+
+                if (spellRequest.repeat) {
+                    // no other spell is gonna be cast, clear the whole queue
+                    spellRequestsByTurn = {};
+                    spellRequestsByTurn[turnNumber + spell.turn + 1] = spellRequest;
+                }
             }
 
             // only count fully recruited units
@@ -170,7 +176,8 @@ function fullSimulation() {
             new SpellRequest(
                 spell,
                 int($(this).find('.input-tu-offset').val()),
-                parseFloat($(this).find('.input-xp').val()) / 100.0
+                parseFloat($(this).find('.input-xp').val()) / 100.0,
+                $(this).find('.input-repeat').is(':checked')
             )
         );
     });
@@ -703,6 +710,7 @@ function saveToLocalStorage() {
             spellId: spell.id,
             turnOffset: parseInt($(this).find('.input-tu-offset').val()),
             xp: parseFloat($(this).find('.input-xp').val()),
+            repeat: $(this).find('.input-repeat').is(':checked'),
         })
     });
     let data = {
@@ -758,6 +766,7 @@ function loadInputsFromJson(defaults) {
         row.find('.input-spell').val(spellRequest.spellId);
         row.find('.input-tu-offset').val(spellRequest.turnOffset);
         row.find('.input-xp').val(spellRequest.xp);
+        row.find('.input-repeat').prop('checked', spellRequest.repeat);
     });
 
     spellsStoredXp = defaults.spellsStoredXp;
@@ -881,6 +890,7 @@ $(function () {
             row.find('.input-tu-offset').val('');
             row.find('.input-xp').val('');
             row.find('.input-tu-computed').val('');
+            row.find('.input-repeat').prop('checked', false);
 
             return;
         }

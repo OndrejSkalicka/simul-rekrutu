@@ -179,10 +179,12 @@ class SpellRequest {
      * @param {Spell} spell
      * @param {int} turnOffset
      * @param {float} xp
+     * @param {boolean} repeat
      */
-    constructor(spell, turnOffset, xp) {
+    constructor(spell, turnOffset, xp, repeat) {
         this.spell = spell;
         this.turnOffset = turnOffset;
         this.xp = xp;
+        this.repeat = repeat;
     }
 }
