@@ -23,7 +23,7 @@ function int(s) {
     if (s instanceof $) {
         return int(s.val());
     }
-    return parseInt(s.replace(" ", ""));
+    return parseInt(s.replaceAll(" ", ""));
 }
 
 /**
