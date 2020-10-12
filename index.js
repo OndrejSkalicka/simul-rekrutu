@@ -75,17 +75,13 @@ function simulate(reqs, initialProvince, spellRequests = []) {
             let manaGain = r(currentProvince.manaPerTu);
 
             let realMaxPop = currentProvince.popMax - currentProvince.unitsCount * 3;
-            let popGain = 0;
 
+            // starvation
             if (currentProvince.pop > realMaxPop) {
-                // overpopulation
-                popGain = c((realMaxPop - currentProvince.pop) / 4);
-            } else if (currentProvince.pop + currentProvince.totalPopPerTu() > realMaxPop) {
-                // natural growth does not go over max
-                popGain = realMaxPop - currentProvince.pop;
-            } else {
-                popGain = r(currentProvince.totalPopPerTu());
+                realMaxPop = realMaxPop + (currentProvince.pop - realMaxPop) * 0.75;
             }
+            let maxPopGain = realMaxPop - currentProvince.pop;
+            let popGain = Math.min(maxPopGain, r(currentProvince.totalPopPerTu()));
 
             currentProvince.gold = r(currentProvince.gold + goldGain - req.unit.costGold * recruited);
             currentProvince.goldPerTuStatic = currentProvince.goldPerTuStatic - req.unit.upkeepGold * recruited;
